@@ -1,12 +1,10 @@
-use std::collections::{HashMap, HashSet};
-
 use crate::block::{Block, BlockType, Direction};
 
 #[derive(Debug)]
 pub struct Board {
     pub board: Vec<Block>,
     pub size: (u32, u32),
-    pub modified: HashSet<(u32, u32)>,
+    pub modified: Vec<(u32, u32)>,
 }
 
 impl Board {
@@ -22,7 +20,7 @@ impl Board {
             };
             length
         ];
-        let modified: HashSet<(u32, u32)> = HashSet::new();
+        let modified: Vec<(u32, u32)> = Vec::new();
 
         Ok(Board {
             board,
@@ -41,65 +39,76 @@ impl Board {
         let pos = loc.0 + loc.1 * self.size.0;
 
         self.board[pos as usize] = block;
-        self.modified.insert(loc);
+        self.modified.push(loc);
     }
 
     /// Step the board to the next state
     pub fn step(&mut self) {
         println!("{:?}", self.modified);
-        let mut next_modified: HashSet<(u32, u32)> = HashSet::new();
 
-        for m in &self.modified {
-            let directions = vec![
+        let mut to_calculate: Vec<(u32, u32)> = Vec::new();
+        let mut to_toggle_state: Vec<(u32, u32)> = Vec::new();
+
+        for m in &self.modified {          
+            let is_active_before = self.board[(m.0 + m.1 * self.size.0) as usize].active;
+      
+            let is_active_after = self.calculate_block(*m);
+
+            if is_active_before == is_active_after {
+                continue; // No changes to block
+            }
+
+            let modified_list = self.board[(m.0 + m.1 * self.size.0) as usize].influences();
+
+            let mut to_calc: Vec<(u32, u32)> = vec![];
+            for dir in modified_list {
+                let elem = self.get_surrounding(*m, dir);
+                if let Some(x) = elem {
+                    to_calc.push(x);
+                }
+            }
+            
+            to_calculate.append(&mut to_calc);
+            to_toggle_state.push(*m);
+        }
+
+        // Update for next Loop
+        for loc in to_toggle_state {
+            self.board[(loc.0 + loc.1 * self.size.0) as usize].toggle();
+        }
+
+        self.modified = to_calculate;
+        println!("{:?}", self.modified);
+    }
+
+
+    fn calculate_block(&self, m: (u32, u32)) -> bool {
+        let inputs = self.get_inputs(m);
+
+
+        self.board[(m.0 + m.1 * self.size.0) as usize].calc(inputs)
+    }
+
+    fn get_inputs(&self, m: (u32, u32)) -> Vec<bool> {
+        let directions = vec![
                 Direction::Up,
                 Direction::Right,
                 Direction::Down,
                 Direction::Left,
             ];
 
-            let mut inputs: Vec<bool> = Vec::new();
-            for dir in &directions {
-                inputs.push(
-                    if let Some((x, y)) = self.get_surrounding(*m, dir.clone()) {
-                        let opposite = Direction::opposite(dir.clone());
-                        self.board[(x + y * self.size.0) as usize].output(opposite)
-                    } else {
-                        false
-                    },
-                );
-            }
-
-            let mut before_output = HashMap::new();
-            for dir in &directions {
-                let output = self.board[(m.0 + m.1 * self.size.0) as usize].output(dir.clone());
-                before_output.insert(dir, output);
-            }
-
-            self.board[(m.0 + m.1 * self.size.0) as usize].calc(inputs);
-
-            for dir in &directions {
-                if before_output[dir]
-                    != self.board[(m.0 + m.1 * self.size.0) as usize].next_output(dir.clone())
-                {
-                    if let Some((x, y)) = self.get_surrounding(*m, dir.clone()) {
-                        if self.board[(x + y * self.size.0) as usize].block_type != BlockType::Empty
-                        {
-                            next_modified.insert((x, y));
-                        }
-                    }
-                }
-            }
+        let mut inputs: Vec<bool> = Vec::new();
+        for dir in &directions {
+            inputs.push(
+                if let Some((x, y)) = self.get_surrounding(m, dir.clone()) {
+                    let opposite = Direction::opposite(dir.clone());
+                    self.board[(x + y * self.size.0) as usize].output(opposite)
+                } else {
+                    false
+                },
+            );
         }
-
-        // Apply Changes
-        for loc in &self.modified {
-            let (x, y) = loc;
-            self.board[(x + y * self.size.0) as usize].apply();
-        }
-
-        // Update for next Loop
-        self.modified = next_modified;
-        println!("{:?}", self.modified);
+        inputs
     }
 
     /// Gets the 4 directly surrounding from a block. Returns None if past the boundaries of the board

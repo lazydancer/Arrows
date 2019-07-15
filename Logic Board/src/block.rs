@@ -65,42 +65,31 @@ impl Block {
         false
     }
 
-    pub fn next_output(&self, direction: Direction) -> bool {
-        if let BlockType::Arrow(d) = &self.block_type {
-            if d == &direction {
-                return self.next_active;
-            }
-        }
-
-        if let BlockType::NotArrow(d) = &self.block_type {
-            if d == &direction {
-                return self.next_active;
-            }
-        }
-
-        let opposite = Direction::opposite(direction.clone());
-        if let BlockType::Split(d) = &self.block_type {
-            if d == &direction || d == &opposite {
-                return self.next_active;
-            }
-        }
-
-        false
-    }
-
-    /// Calculates the block, updating internal active property
-    pub fn calc(&mut self, inputs: Vec<bool>) {
+    /// Returns if the calculation is true or false
+    pub fn calc(&self, inputs: Vec<bool>) -> bool {
         let is_any_surrounding = inputs.iter().any(|&x| x);
 
-        self.next_active = match self.block_type {
+        match self.block_type {
             BlockType::NotArrow(_) => !is_any_surrounding,
             _ => is_any_surrounding,
-        };
+        }
     }
 
-    pub fn apply(&mut self) {
-        self.active = self.next_active;
+    /// When value toggles what other blocks could be changed (influenced)
+    pub fn influences(&self) -> Vec<Direction> {
+        match &self.block_type {
+            BlockType::Arrow(d) => vec![d.clone()],
+            BlockType::NotArrow(d) => vec![d.clone()],
+            BlockType::Split(d) => vec![d.clone(), Direction::opposite(d.clone())],
+            BlockType::Empty => vec![],
+        }
     }
+
+
+    pub fn toggle(&mut self) {
+        self.active = !self.active;
+    }
+
 }
 
 #[cfg(test)]
