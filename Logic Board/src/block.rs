@@ -1,4 +1,67 @@
-#[derive(Debug, Clone, PartialEq, Hash, Eq)]
+#[derive(Debug, Clone)]
+pub struct Block {
+    pub block_type: BlockType,
+    pub active: bool,
+}
+
+impl Block {
+    pub fn new(block_type: BlockType) -> Block {
+        Block {
+            block_type,
+            active: false,
+        }
+    }
+
+    /// Using internal state determine output in direction given
+    pub fn output(&self, direction: Direction) -> bool {
+        if let BlockType::Arrow(d) = &self.block_type {
+            if d == &direction {
+                return self.active;
+            }
+        }
+
+        if let BlockType::NotArrow(d) = &self.block_type {
+            if d == &direction {
+                return self.active;
+            }
+        }
+
+        let opposite = Direction::opposite(direction.clone());
+        if let BlockType::Split(d) = &self.block_type {
+            if d == &direction || d == &opposite {
+                return self.active;
+            }
+        }
+
+        false
+    }
+
+    /// Using external outputs, calculate the block and return solution
+    pub fn calc(&self, inputs: Vec<bool>) -> bool {
+        let is_any_surrounding = inputs.iter().any(|&x| x);
+
+        match self.block_type {
+            BlockType::NotArrow(_) => !is_any_surrounding,
+            _ => is_any_surrounding,
+        }
+    }
+
+    /// When value toggles what other blocks could be changed (influenced)
+    pub fn influences(&self) -> Vec<Direction> {
+        match &self.block_type {
+            BlockType::Arrow(d) => vec![d.clone()],
+            BlockType::NotArrow(d) => vec![d.clone()],
+            BlockType::Split(d) => vec![d.clone(), Direction::opposite(d.clone())],
+            BlockType::Empty => vec![],
+        }
+    }
+
+    pub fn toggle(&mut self) {
+        self.active = !self.active;
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Direction {
     Up,
     Right,
@@ -25,73 +88,6 @@ pub enum BlockType {
     Split(Direction),
 }
 
-#[derive(Debug, Clone)]
-pub struct Block {
-    pub block_type: BlockType,
-    pub active: bool,
-    pub next_active: bool,
-}
-
-impl Block {
-    pub fn new(block_type: BlockType) -> Block {
-        Block {
-            block_type,
-            active: false,
-            next_active: false,
-        }
-    }
-    /// Given a direction tells what the output will be, None if not attached
-    /// NotArrow will output true if active and false is not active (Acts like arrow on output)
-    pub fn output(&self, direction: Direction) -> bool {
-        if let BlockType::Arrow(d) = &self.block_type {
-            if d == &direction {
-                return self.active;
-            }
-        }
-
-        if let BlockType::NotArrow(d) = &self.block_type {
-            if d == &direction {
-                return self.active;
-            }
-        }
-
-        let opposite = Direction::opposite(direction.clone());
-        if let BlockType::Split(d) = &self.block_type {
-            if d == &direction || d == &opposite {
-                return self.active;
-            }
-        }
-
-        false
-    }
-
-    /// Returns if the calculation is true or false
-    pub fn calc(&self, inputs: Vec<bool>) -> bool {
-        let is_any_surrounding = inputs.iter().any(|&x| x);
-
-        match self.block_type {
-            BlockType::NotArrow(_) => !is_any_surrounding,
-            _ => is_any_surrounding,
-        }
-    }
-
-    /// When value toggles what other blocks could be changed (influenced)
-    pub fn influences(&self) -> Vec<Direction> {
-        match &self.block_type {
-            BlockType::Arrow(d) => vec![d.clone()],
-            BlockType::NotArrow(d) => vec![d.clone()],
-            BlockType::Split(d) => vec![d.clone(), Direction::opposite(d.clone())],
-            BlockType::Empty => vec![],
-        }
-    }
-
-
-    pub fn toggle(&mut self) {
-        self.active = !self.active;
-    }
-
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -101,7 +97,6 @@ mod tests {
         let arrow = Block {
             block_type: BlockType::Arrow(Direction::Right),
             active: true,
-            next_active: false,
         };
 
         assert_eq!(arrow.output(Direction::Up), false);
@@ -115,7 +110,6 @@ mod tests {
         let arrow = Block {
             block_type: BlockType::NotArrow(Direction::Up),
             active: true,
-            next_active: false,
         };
 
         assert_eq!(arrow.output(Direction::Up), true);
@@ -129,7 +123,6 @@ mod tests {
         let arrow = Block {
             block_type: BlockType::Split(Direction::Up),
             active: true,
-            next_active: false,
         };
 
         assert_eq!(arrow.output(Direction::Up), true);
@@ -143,13 +136,13 @@ mod tests {
         let mut arrow = Block {
             block_type: BlockType::Arrow(Direction::Right),
             active: false,
-            next_active: false,
         };
 
         let inputs: Vec<bool> = vec![false, false, false, true];
 
-        arrow.calc(inputs);
-        arrow.apply();
+        if arrow.active != arrow.calc(inputs) {
+            arrow.toggle();
+        }
 
         assert_eq!(false, arrow.output(Direction::Up));
         assert_eq!(true, arrow.output(Direction::Right));
@@ -163,13 +156,13 @@ mod tests {
         let mut not = Block {
             block_type: BlockType::NotArrow(Direction::Right),
             active: true,
-            next_active: false,
         };
 
         let inputs: Vec<bool> = vec![false, false, true, false];
 
-        not.calc(inputs);
-        not.apply();
+        if not.active != not.calc(inputs) {
+            not.toggle();
+        }
 
         assert_eq!(false, not.output(Direction::Up));
         assert_eq!(false, not.output(Direction::Right));
@@ -183,12 +176,13 @@ mod tests {
         let mut split = Block {
             block_type: BlockType::Split(Direction::Right),
             active: false,
-            next_active: false,
         };
 
         let inputs: Vec<bool> = vec![false, false, false, false];
 
-        split.calc(inputs);
+        if split.active != split.calc(inputs) {
+            split.toggle();
+        }
 
         assert_eq!(false, split.output(Direction::Up));
         assert_eq!(false, split.output(Direction::Right));

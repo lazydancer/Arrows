@@ -16,7 +16,6 @@ impl Board {
             Block {
                 block_type: BlockType::Empty,
                 active: false,
-                next_active: false,
             };
             length
         ];
@@ -49,9 +48,9 @@ impl Board {
         let mut to_calculate: Vec<(u32, u32)> = Vec::new();
         let mut to_toggle_state: Vec<(u32, u32)> = Vec::new();
 
-        for m in &self.modified {          
+        for m in &self.modified {
             let is_active_before = self.board[(m.0 + m.1 * self.size.0) as usize].active;
-      
+
             let is_active_after = self.calculate_block(*m);
 
             if is_active_before == is_active_after {
@@ -67,7 +66,7 @@ impl Board {
                     to_calc.push(x);
                 }
             }
-            
+
             to_calculate.append(&mut to_calc);
             to_toggle_state.push(*m);
         }
@@ -81,32 +80,28 @@ impl Board {
         println!("{:?}", self.modified);
     }
 
-
     fn calculate_block(&self, m: (u32, u32)) -> bool {
         let inputs = self.get_inputs(m);
-
 
         self.board[(m.0 + m.1 * self.size.0) as usize].calc(inputs)
     }
 
     fn get_inputs(&self, m: (u32, u32)) -> Vec<bool> {
         let directions = vec![
-                Direction::Up,
-                Direction::Right,
-                Direction::Down,
-                Direction::Left,
-            ];
+            Direction::Up,
+            Direction::Right,
+            Direction::Down,
+            Direction::Left,
+        ];
 
         let mut inputs: Vec<bool> = Vec::new();
         for dir in &directions {
-            inputs.push(
-                if let Some((x, y)) = self.get_surrounding(m, dir.clone()) {
-                    let opposite = Direction::opposite(dir.clone());
-                    self.board[(x + y * self.size.0) as usize].output(opposite)
-                } else {
-                    false
-                },
-            );
+            inputs.push(if let Some((x, y)) = self.get_surrounding(m, dir.clone()) {
+                let opposite = Direction::opposite(dir.clone());
+                self.board[(x + y * self.size.0) as usize].output(opposite)
+            } else {
+                false
+            });
         }
         inputs
     }

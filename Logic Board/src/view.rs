@@ -23,59 +23,20 @@ impl View {
         let mut draw_block: Vec<ColoredString> = Vec::new();
 
         for blk in blocks {
-            let cara = match blk {
-                Block {
-                    block_type: BlockType::Empty,
-                    ..
-                } => ' ',
-                Block {
-                    block_type: BlockType::Arrow(Direction::Up),
-                    ..
-                } => '↑',
-                Block {
-                    block_type: BlockType::Arrow(Direction::Right),
-                    ..
-                } => '→',
-                Block {
-                    block_type: BlockType::Arrow(Direction::Down),
-                    ..
-                } => '↓',
-                Block {
-                    block_type: BlockType::Arrow(Direction::Left),
-                    ..
-                } => '←',
-                Block {
-                    block_type: BlockType::NotArrow(Direction::Up),
-                    ..
-                } => '^',
-                Block {
-                    block_type: BlockType::NotArrow(Direction::Right),
-                    ..
-                } => '>',
-                Block {
-                    block_type: BlockType::NotArrow(Direction::Down),
-                    ..
-                } => 'v',
-                Block {
-                    block_type: BlockType::NotArrow(Direction::Left),
-                    ..
-                } => '<',
-                Block {
-                    block_type: BlockType::Split(Direction::Left),
-                    ..
-                } => '↔',
-                Block {
-                    block_type: BlockType::Split(Direction::Right),
-                    ..
-                } => '↔',
-                Block {
-                    block_type: BlockType::Split(Direction::Up),
-                    ..
-                } => '↕',
-                Block {
-                    block_type: BlockType::Split(Direction::Down),
-                    ..
-                } => '↕',
+            let cara = match blk.block_type {
+                BlockType::Empty => ' ',
+                BlockType::Arrow(Direction::Up) => '↑',
+                BlockType::Arrow(Direction::Right) => '→',
+                BlockType::Arrow(Direction::Down) => '↓',
+                BlockType::Arrow(Direction::Left) => '←',
+                BlockType::NotArrow(Direction::Up) => '^',
+                BlockType::NotArrow(Direction::Right) => '>',
+                BlockType::NotArrow(Direction::Down) => 'v',
+                BlockType::NotArrow(Direction::Left) => '<',
+                BlockType::Split(Direction::Left) => '↔',
+                BlockType::Split(Direction::Right) => '↔',
+                BlockType::Split(Direction::Up) => '↕',
+                BlockType::Split(Direction::Down) => '↕',
             };
 
             let cara = if blk.active {

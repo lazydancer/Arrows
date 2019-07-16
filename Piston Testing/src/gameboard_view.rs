@@ -174,5 +174,9 @@ impl GameboardView {
             c.transform,
             g,
         );
+
+        let transform = c.transform.trans(10.0, 100.0);
+
+        clear([0.0, 0.0, 0.0, 1.0], g);
     }
 }
