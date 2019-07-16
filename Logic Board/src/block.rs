@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub struct Block {
     pub block_type: BlockType,
     pub active: bool,
@@ -61,7 +61,7 @@ impl Block {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Direction {
     Up,
     Right,
@@ -80,7 +80,7 @@ impl Direction {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Hash)]
 pub enum BlockType {
     Empty,
     Arrow(Direction),

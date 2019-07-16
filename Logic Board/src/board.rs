@@ -1,8 +1,11 @@
+use std::collections::HashMap;
+
 use crate::block::{Block, BlockType, Direction};
 
 #[derive(Debug)]
 pub struct Board {
     pub board: Vec<Block>,
+    pub blocks: HashMap<(u32, u32), Block>,
     pub size: (u32, u32),
     pub modified: Vec<(u32, u32)>,
 }
@@ -19,10 +22,12 @@ impl Board {
             };
             length
         ];
+        let blocks = HashMap::new();
         let modified: Vec<(u32, u32)> = Vec::new();
 
         Ok(Board {
             board,
+            blocks,
             size,
             modified,
         })
@@ -38,6 +43,18 @@ impl Board {
         let pos = loc.0 + loc.1 * self.size.0;
 
         self.board[pos as usize] = block;
+        self.modified.push(loc);
+    }
+
+    /// Set the block on the board
+    pub fn set_block(&mut self, block: Block, loc: (u32, u32)) {
+        // Check if loc on board
+        if loc.0 >= self.size.0 || loc.1 >= self.size.1 {
+            println!("{:?} not on board", loc);
+            return;
+        }
+
+        self.blocks.insert(loc, block);
         self.modified.push(loc);
     }
 
@@ -80,10 +97,68 @@ impl Board {
         println!("{:?}", self.modified);
     }
 
+    /// Step the board to the next state
+    pub fn step_block(&mut self) {
+        println!("{:?}", self.modified);
+
+        let mut to_calculate: Vec<(u32, u32)> = Vec::new();
+        let mut to_toggle_state: Vec<(u32, u32)> = Vec::new();
+
+        for m in &self.modified {
+            // if block doesn't exist,  continue
+            if let None = self.blocks.get(m) {
+                continue;
+            }
+
+            let is_active_before = self.blocks[m].active;
+
+            let is_active_after = self.calculate_block(*m);
+
+            if is_active_before == is_active_after {
+                continue; // No changes to block
+            }
+
+            let modified_dirs = self.blocks[m].influences();
+
+            let mut to_calc: Vec<(u32, u32)> = vec![];
+            for dir in modified_dirs {
+                let elem = self.get_surrounding(*m, dir);
+                if let Some(x) = elem {
+                    to_calc.push(x);
+                }
+            }
+
+            to_calculate.append(&mut to_calc);
+            to_toggle_state.push(*m);
+        }
+
+        let to_toggle_state = to_toggle_state;
+
+        // Update for next Loop
+        Board::update_blocks(&mut self.blocks, to_toggle_state);
+
+        self.modified = to_calculate;
+        println!("{:?}", self.modified);
+    }
+
+    fn update_blocks(blocks: &mut HashMap<(u32, u32), Block>, to_toggle: Vec<(u32, u32)>) {
+        for loc in &to_toggle {
+            if let Some(x) = blocks.get_mut(loc) {
+                x.toggle();
+            }
+        }
+    }
+
     fn calculate_block(&self, m: (u32, u32)) -> bool {
         let inputs = self.get_inputs(m);
 
         self.board[(m.0 + m.1 * self.size.0) as usize].calc(inputs)
+    }
+
+    fn calculate_block_block(&self, m: (u32, u32)) -> bool {
+        let inputs = self.get_inputs(m);
+
+        self.blocks.get(&m).unwrap().calc(inputs)
     }
 
     fn get_inputs(&self, m: (u32, u32)) -> Vec<bool> {
@@ -99,6 +174,30 @@ impl Board {
             inputs.push(if let Some((x, y)) = self.get_surrounding(m, dir.clone()) {
                 let opposite = Direction::opposite(dir.clone());
                 self.board[(x + y * self.size.0) as usize].output(opposite)
+            } else {
+                false
+            });
+        }
+        inputs
+    }
+
+    fn get_inputs_block(&self, m: (u32, u32)) -> Vec<bool> {
+        let directions = vec![
+            Direction::Up,
+            Direction::Right,
+            Direction::Down,
+            Direction::Left,
+        ];
+
+        let mut inputs: Vec<bool> = Vec::new();
+        for dir in &directions {
+            inputs.push(if let Some(loc) = self.get_surrounding(m, dir.clone()) {
+                if let Some(x) = self.blocks.get(&loc) {
+                    let opposite = Direction::opposite(dir.clone());
+                    x.output(opposite)
+                } else {
+                    false
+                }
             } else {
                 false
             });

@@ -59,3 +59,10 @@ impl View {
         println!()
     }
 }
+
+// Draw directly from the hashmap!
+// fn draw_block(&self, blocks: &Hashmap<(u32, u32), Blocks>) {
+//     let mut board: Vec<Vec<Block>> = new::Vec();
+
+//     for (key, value) in blocks {}
+// }
