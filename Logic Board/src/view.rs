@@ -17,9 +17,7 @@ pub struct View {
 
 impl View {
     /// Draws board
-    pub fn draw(&self, board: &Board) {
-        let blocks = &board.board;
-
+    pub fn draw(&self, blocks: &[Block]) {
         let mut draw_block: Vec<ColoredString> = Vec::new();
 
         for blk in blocks {
@@ -58,11 +56,22 @@ impl View {
 
         println!()
     }
+
+    // Draw directly from the hashmap!
+    pub fn draw_block(&self, to_draw: &Board) {
+        let length = self.settings.size.0 as usize * self.settings.size.1 as usize;
+        let mut board: Vec<Block> = vec![
+            Block {
+                block_type: BlockType::Empty,
+                active: false,
+            };
+            length
+        ];
+
+        for ((x, y), blk) in &to_draw.blocks {
+            board[(x + y * self.settings.size.0 as i32) as usize] = blk.clone();
+        }
+
+        self.draw(&board);
+    }
 }
-
-// Draw directly from the hashmap!
-// fn draw_block(&self, blocks: &Hashmap<(u32, u32), Blocks>) {
-//     let mut board: Vec<Vec<Block>> = new::Vec();
-
-//     for (key, value) in blocks {}
-// }
