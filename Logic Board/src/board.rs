@@ -1,30 +1,36 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use crate::block::{Block, Direction};
 
 #[derive(Debug)]
 pub struct Board {
     pub blocks: HashMap<(i32, i32), Block>,
-    pub modified: HashSet<(i32, i32)>,
+    pub modified: Vec<(i32, i32)>,
 }
 
 impl Board {
     /// Create a new board full of Empty and empty modified
-    pub fn new() -> Board {
+    pub fn new() -> Self {
         let blocks = HashMap::new();
-        let modified: HashSet<(i32, i32)> = HashSet::new();
+        let modified = vec![];
 
         Board { blocks, modified }
     }
     /// Set the block on the board
     pub fn set(&mut self, block: Block, loc: (i32, i32)) {
         self.blocks.insert(loc, block);
-        self.modified.insert(loc);
+        self.modified.push(loc);
     }
     /// Step the board to the next state
     pub fn step(&mut self) {
-        let mut next_modified: HashSet<(i32, i32)> = HashSet::new();
-        let mut next_toggled: HashSet<(i32, i32)> = HashSet::new();
+        // This is the meat of the logic. Goes through a modified list from the previous step
+        // 1. Checks to see if we need to update, if nothing is there or it doesn't change
+        // 2. Stages it to updated if updated
+        // 3. Pushs the arrows that will change around it to the next_modified list for the next 'step'
+        // When all modified list are done, update the change blocks and make the modfied for the next step
+
+        let mut next_modified = vec![];
+        let mut next_toggled = vec![];
 
         for m in &self.modified {
             // if block doesn't exist,  continue
@@ -32,37 +38,35 @@ impl Board {
                 continue;
             }
 
+            // Check to see if anything will change will update
             let is_active_before = self.blocks[m].active;
-
             let is_active_after = self.calculate_block(*m);
-
             if is_active_before == is_active_after {
                 continue; // No changes to block
             }
 
-            next_toggled.insert(*m);
+            // Stage to be toggled
+            next_toggled.push(*m);
 
+            // Add blocks that will need an updat to next modified
             let modified_dirs = self.blocks[m].influences();
-
-            let mut to_calc: HashSet<(i32, i32)> = HashSet::new();
+            let mut to_calc = vec![];
             for dir in modified_dirs {
                 let elem = self.get_surrounding(*m, dir);
                 if let Some(x) = elem {
-                    to_calc.insert(x);
+                    to_calc.push(x);
                 }
             }
-
             next_modified.extend(to_calc);
         }
 
-        let next_toggled = next_toggled;
-
         // Update for next Loop
         Board::update_blocks(&mut self.blocks, next_toggled);
+        next_modified.dedup(); // Removes duplicates
         self.modified = next_modified;
     }
 
-    fn update_blocks(blocks: &mut HashMap<(i32, i32), Block>, to_toggle: HashSet<(i32, i32)>) {
+    fn update_blocks(blocks: &mut HashMap<(i32, i32), Block>, to_toggle: Vec<(i32, i32)>) {
         for loc in &to_toggle {
             if let Some(x) = blocks.get_mut(loc) {
                 x.toggle();

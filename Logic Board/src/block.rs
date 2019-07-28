@@ -70,8 +70,8 @@ pub enum Direction {
 }
 
 impl Direction {
-    pub fn opposite(d: Direction) -> Direction {
-        match d {
+    pub fn opposite(dir: Direction) -> Direction {
+        match dir {
             Direction::Up => Direction::Down,
             Direction::Down => Direction::Up,
             Direction::Right => Direction::Left,
