@@ -2,10 +2,16 @@ use std::collections::HashMap;
 
 use crate::block::{Block, Direction};
 
+#[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
+pub struct Pos {
+    pub x: i32,
+    pub y: i32,
+}
+
 #[derive(Debug)]
 pub struct Board {
-    pub blocks: HashMap<(i32, i32), Block>,
-    pub modified: Vec<(i32, i32)>,
+    pub blocks: HashMap<Pos, Block>,
+    pub modified: Vec<Pos>,
 }
 
 impl Board {
@@ -17,7 +23,7 @@ impl Board {
         Board { blocks, modified }
     }
     /// Set the block on the board
-    pub fn set(&mut self, block: Block, loc: (i32, i32)) {
+    pub fn set(&mut self, block: Block, loc: Pos) {
         self.blocks.insert(loc, block);
         self.modified.push(loc);
     }
@@ -50,13 +56,11 @@ impl Board {
 
             // Add blocks that will need an updat to next modified
             let modified_dirs = self.blocks[m].influences();
-            let mut to_calc = vec![];
-            for dir in modified_dirs {
-                let elem = self.get_surrounding(*m, dir);
-                if let Some(x) = elem {
-                    to_calc.push(x);
-                }
-            }
+            let surrounding = modified_dirs
+                .into_iter()
+                .map(|dir| self.get_surrounding(*m, dir));
+            let to_calc = surrounding.filter(|x| x.is_some()).map(|x| x.unwrap());
+
             next_modified.extend(to_calc);
         }
 
@@ -66,7 +70,7 @@ impl Board {
         self.modified = next_modified;
     }
 
-    fn update_blocks(blocks: &mut HashMap<(i32, i32), Block>, to_toggle: Vec<(i32, i32)>) {
+    fn update_blocks(blocks: &mut HashMap<Pos, Block>, to_toggle: Vec<Pos>) {
         for loc in &to_toggle {
             if let Some(x) = blocks.get_mut(loc) {
                 x.toggle();
@@ -74,13 +78,13 @@ impl Board {
         }
     }
 
-    fn calculate_block(&self, m: (i32, i32)) -> bool {
+    fn calculate_block(&self, m: Pos) -> bool {
         let inputs = self.get_inputs(m);
 
         self.blocks.get(&m).unwrap().calc(inputs)
     }
 
-    fn get_inputs(&self, m: (i32, i32)) -> Vec<bool> {
+    fn get_inputs(&self, pos: Pos) -> Vec<bool> {
         let directions = vec![
             Direction::Up,
             Direction::Right,
@@ -88,24 +92,27 @@ impl Board {
             Direction::Left,
         ];
 
-        let mut inputs: Vec<bool> = Vec::new();
-        for dir in &directions {
-            inputs.push(if let Some(loc) = self.get_surrounding(m, dir.clone()) {
-                if let Some(x) = self.blocks.get(&loc) {
-                    let opposite = Direction::opposite(dir.clone());
-                    x.output(opposite)
-                } else {
-                    false
-                }
-            } else {
-                false
-            });
-        }
-        inputs
+        directions.into_iter().map(|dir| self.get_input(pos, dir)).collect()
+    }
+
+    fn get_input(&self, pos: Pos, dir: Direction) -> bool {
+        let input_loc = match self.get_surrounding(pos, dir) {
+            Some(pos) => pos,
+            None => return false,
+        };
+
+        let input_block = match self.blocks.get(&input_loc) {
+            Some(blk) => blk,
+            None => return false,
+        };
+
+        let opposite = Direction::opposite(dir);
+
+        input_block.output(opposite)
     }
 
     /// Gets the 4 directly surrounding from a block. Returns None if past the boundaries of the board
-    fn get_surrounding(&self, x: (i32, i32), dir: Direction) -> Option<(i32, i32)> {
+    fn get_surrounding(&self, pos: Pos, dir: Direction) -> Option<Pos> {
         let step = match dir {
             Direction::Up => (0, -1),
             Direction::Right => (1, 0),
@@ -113,8 +120,11 @@ impl Board {
             Direction::Left => (-1, 0),
         };
 
-        let result = (x.0 as i32 + step.0 as i32, x.1 as i32 + step.1 as i32);
+        let result = (pos.x as i32 + step.0 as i32, pos.y as i32 + step.1 as i32);
 
-        Some((result.0 as i32, result.1 as i32))
+        Some(Pos {
+            x: result.0 as i32,
+            y: result.1 as i32,
+        })
     }
 }
