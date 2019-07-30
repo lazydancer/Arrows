@@ -29,43 +29,41 @@ impl Board {
     }
     /// Step the board to the next state
     pub fn step(&mut self) {
-        // This is the meat of the logic. Goes through a modified list from the previous step
-        // 1. Checks to see if we need to update, if nothing is there or it doesn't change
-        // 2. Stages it to updated if updated
-        // 3. Pushs the arrows that will change around it to the next_modified list for the next 'step'
-        // When all modified list are done, update the change blocks and make the modfied for the next step
+        // Changes are staged in 
+        // toggle_staged - When completed all updates the toggle is applied      
+        // next_modified - When completed all updates the modified list is replace with next_modified
 
         let mut next_modified = vec![];
-        let mut next_toggled = vec![];
+        let mut toggle_staged = vec![];
 
-        for m in &self.modified {
-            // if block doesn't exist,  continue
-            if self.blocks.get(m).is_none() {
+        for modified_pos in &self.modified {
+            if self.blocks.get(modified_pos).is_none() {
                 continue;
             }
 
             // Check to see if anything will change will update
-            let is_active_before = self.blocks[m].active;
-            let is_active_after = self.calculate_block(*m);
+            let is_active_before = self.blocks[modified_pos].active;
+            let is_active_after = self.calculate_block(*modified_pos);
             if is_active_before == is_active_after {
                 continue; // No changes to block
             }
 
             // Stage to be toggled
-            next_toggled.push(*m);
+            toggle_staged.push(*modified_pos);
 
-            // Add blocks that will need an updat to next modified
-            let modified_dirs = self.blocks[m].influences();
-            let surrounding = modified_dirs
+            // Add blocks that will need an update to next modified
+            let modified_dirs = self.blocks[modified_pos].influences();
+            let to_calc = modified_dirs
                 .into_iter()
-                .map(|dir| self.get_surrounding(*m, dir));
-            let to_calc = surrounding.filter(|x| x.is_some()).map(|x| x.unwrap());
+                .map(|dir| self.get_surrounding(*modified_pos, dir))
+                .filter(|x| x.is_some())
+                .map(|x| x.unwrap());
 
             next_modified.extend(to_calc);
         }
 
         // Update for next Loop
-        Board::update_blocks(&mut self.blocks, next_toggled);
+        Board::update_blocks(&mut self.blocks, toggle_staged);
         next_modified.dedup(); // Removes duplicates
         self.modified = next_modified;
     }
@@ -120,11 +118,8 @@ impl Board {
             Direction::Left => (-1, 0),
         };
 
-        let result = (pos.x as i32 + step.0 as i32, pos.y as i32 + step.1 as i32);
+        let (x, y) = (pos.x as i32 + step.0 as i32, pos.y as i32 + step.1 as i32);
 
-        Some(Pos {
-            x: result.0 as i32,
-            y: result.1 as i32,
-        })
+        Some(Pos { x, y })
     }
 }

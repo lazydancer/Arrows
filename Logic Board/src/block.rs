@@ -13,27 +13,35 @@ impl Block {
     }
 
     /// Using internal state determine output in direction given
-    pub fn output(&self, direction: Direction) -> bool {
-        if let BlockType::Arrow(d) = &self.block_type {
-            if d == &direction {
-                return self.active;
-            }
+    pub fn output(&self, dir: Direction) -> bool {
+        match &self.block_type {
+            BlockType::Arrow(n) if *n == dir => self.active,
+            BlockType::NotArrow(n) if *n == dir => self.active,
+            BlockType::Split(n) if *n == dir  => self.active,
+            BlockType::Split(n) if *n == Direction::opposite(dir) => self.active,
+            _ => false,
         }
 
-        if let BlockType::NotArrow(d) = &self.block_type {
-            if d == &direction {
-                return self.active;
-            }
-        }
+        // if let BlockType::Arrow(d) = &self.block_type {
+        //     if d == &dir {
+        //         return self.active;
+        //     }
+        // }
 
-        let opposite = Direction::opposite(direction.clone());
-        if let BlockType::Split(d) = &self.block_type {
-            if d == &direction || d == &opposite {
-                return self.active;
-            }
-        }
+        // if let BlockType::NotArrow(d) = &self.block_type {
+        //     if d == &dir {
+        //         return self.active;
+        //     }
+        // }
 
-        false
+        // let opposite = Direction::opposite(dir.clone());
+        // if let BlockType::Split(d) = &self.block_type {
+        //     if d == &dir || d == &opposite {
+        //         return self.active;
+        //     }
+        // }
+
+        // false
     }
 
     /// Using external outputs, calculate the block and return solution
@@ -49,9 +57,9 @@ impl Block {
     /// When value toggles what other blocks could be changed (influenced)
     pub fn influences(&self) -> Vec<Direction> {
         match &self.block_type {
-            BlockType::Arrow(d) => vec![d.clone()],
-            BlockType::NotArrow(d) => vec![d.clone()],
-            BlockType::Split(d) => vec![d.clone(), Direction::opposite(d.clone())],
+            BlockType::Arrow(d) => vec![*d],
+            BlockType::NotArrow(d) => vec![*d],
+            BlockType::Split(d) => vec![*d, Direction::opposite(*d)],
             BlockType::Empty => vec![],
         }
     }
