@@ -69,7 +69,7 @@ impl View {
         ];
 
         for (pos, blk) in &to_draw.blocks {
-            board[(pos.x + pos.y * self.settings.size.0 as i32) as usize] = blk.clone();
+            board[(pos.x + pos.y * self.settings.size.0 as i32) as usize] = *blk;
         }
 
         self.draw(&board);

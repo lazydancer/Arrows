@@ -1,11 +1,34 @@
 use std::collections::HashMap;
 
-use crate::block::{Block, Direction};
+use crate::block::{Block, BlockType, Direction};
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
 pub struct Pos {
     pub x: i32,
     pub y: i32,
+}
+
+impl Pos {
+    pub fn neighbour(self, dir: Direction) -> Self {
+        match dir {
+            Direction::Up => Pos {
+                x: self.x,
+                y: self.y - 1,
+            },
+            Direction::Right => Pos {
+                x: self.x + 1,
+                y: self.y,
+            },
+            Direction::Down => Pos {
+                x: self.x,
+                y: self.y + 1,
+            },
+            Direction::Left => Pos {
+                x: self.x - 1,
+                y: self.y,
+            },
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -27,45 +50,46 @@ impl Board {
         self.blocks.insert(loc, block);
         self.modified.push(loc);
     }
-    /// Step the board to the next state
-    pub fn step(&mut self) {
-        // Changes are staged in 
-        // toggle_staged - When completed all updates the toggle is applied      
-        // next_modified - When completed all updates the modified list is replace with next_modified
 
-        let mut next_modified = vec![];
+    // pub fn remove(&mut self, loc: Pos) {
+    //     self.blocks.remove(loc).is_none() {
+    //         continue;
+    //     }
+    //     self.modified.push(loc);
+    // }
+
+    /// Step the board to the next state
+    /// Blocks are calculated on original state
+    /// Changes are applied on exit
+    pub fn step(&mut self) {
+        let mut modified_staged = vec![];
         let mut toggle_staged = vec![];
 
         for modified_pos in &self.modified {
-            if self.blocks.get(modified_pos).is_none() {
-                continue;
+            let curr_active = match self.blocks.get(modified_pos) {
+                Some(block) => block.active,
+                None => continue,
+            };
+
+            let next_active = self.calculate_block(*modified_pos);
+
+            if curr_active != next_active {
+                // Stage to be toggled
+                toggle_staged.push(*modified_pos);
+
+                // Add blocks that will need an update to next modified
+                let modified_dirs = self.blocks[modified_pos].influences();
+                let to_calc = modified_dirs
+                    .into_iter()
+                    .map(|dir| modified_pos.neighbour(dir));
+
+                modified_staged.extend(to_calc);
             }
-
-            // Check to see if anything will change will update
-            let is_active_before = self.blocks[modified_pos].active;
-            let is_active_after = self.calculate_block(*modified_pos);
-            if is_active_before == is_active_after {
-                continue; // No changes to block
-            }
-
-            // Stage to be toggled
-            toggle_staged.push(*modified_pos);
-
-            // Add blocks that will need an update to next modified
-            let modified_dirs = self.blocks[modified_pos].influences();
-            let to_calc = modified_dirs
-                .into_iter()
-                .map(|dir| self.get_surrounding(*modified_pos, dir))
-                .filter(|x| x.is_some())
-                .map(|x| x.unwrap());
-
-            next_modified.extend(to_calc);
         }
 
-        // Update for next Loop
         Board::update_blocks(&mut self.blocks, toggle_staged);
-        next_modified.dedup(); // Removes duplicates
-        self.modified = next_modified;
+        modified_staged.dedup();
+        self.modified = modified_staged;
     }
 
     fn update_blocks(blocks: &mut HashMap<Pos, Block>, to_toggle: Vec<Pos>) {
@@ -90,14 +114,14 @@ impl Board {
             Direction::Left,
         ];
 
-        directions.into_iter().map(|dir| self.get_input(pos, dir)).collect()
+        directions
+            .into_iter()
+            .map(|dir| self.get_input(pos, dir))
+            .collect()
     }
 
     fn get_input(&self, pos: Pos, dir: Direction) -> bool {
-        let input_loc = match self.get_surrounding(pos, dir) {
-            Some(pos) => pos,
-            None => return false,
-        };
+        let input_loc = pos.neighbour(dir);
 
         let input_block = match self.blocks.get(&input_loc) {
             Some(blk) => blk,
@@ -108,18 +132,71 @@ impl Board {
 
         input_block.output(opposite)
     }
+}
 
-    /// Gets the 4 directly surrounding from a block. Returns None if past the boundaries of the board
-    fn get_surrounding(&self, pos: Pos, dir: Direction) -> Option<Pos> {
-        let step = match dir {
-            Direction::Up => (0, -1),
-            Direction::Right => (1, 0),
-            Direction::Down => (0, 1),
-            Direction::Left => (-1, 0),
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn neighbour_pos() {
+        let pos = Pos { x: 1, y: 1 };
+        let expected_pos = Pos { x: 2, y: 1 };
+
+        assert_eq!(pos.neighbour(Direction::Right), expected_pos);
+    }
+
+    #[test]
+    fn new_board() {
+        Board::new();
+    }
+
+    #[test]
+    fn set_board() {
+        let mut board = Board::new();
+        board.set(
+            Block::new(BlockType::NotArrow(Direction::Right)),
+            Pos { x: 0, y: 2 },
+        );
+
+        let expected_block = Block {
+            block_type: BlockType::NotArrow(Direction::Right),
+            active: false,
         };
 
-        let (x, y) = (pos.x as i32 + step.0 as i32, pos.y as i32 + step.1 as i32);
+        assert_eq!(board.blocks[&Pos { x: 0, y: 2 }], expected_block);
 
-        Some(Pos { x, y })
+        assert_eq!(board.modified, vec![Pos { x: 0, y: 2 }]);
+    }
+
+    #[test]
+    fn step_board() {
+        let mut board = Board::new();
+        board.set(
+            Block::new(BlockType::NotArrow(Direction::Right)),
+            Pos { x: 0, y: 1 },
+        );
+        board.set(
+            Block::new(BlockType::Arrow(Direction::Right)),
+            Pos { x: 1, y: 1 },
+        );
+
+        assert_eq!(board.blocks[&Pos { x: 0, y: 1 }].active, false);
+        assert_eq!(board.blocks[&Pos { x: 1, y: 1 }].active, false);
+
+        board.step();
+
+        assert_eq!(board.blocks[&Pos { x: 0, y: 1 }].active, true);
+        assert_eq!(board.blocks[&Pos { x: 1, y: 1 }].active, false);
+
+        board.step();
+
+        assert_eq!(board.blocks[&Pos { x: 0, y: 1 }].active, true);
+        assert_eq!(board.blocks[&Pos { x: 1, y: 1 }].active, true);
+
+        board.step();
+
+        assert_eq!(board.blocks[&Pos { x: 0, y: 1 }].active, true);
+        assert_eq!(board.blocks[&Pos { x: 1, y: 1 }].active, true);
     }
 }

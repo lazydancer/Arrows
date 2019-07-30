@@ -1,74 +1,3 @@
-#[derive(Debug, Clone, Hash)]
-pub struct Block {
-    pub block_type: BlockType,
-    pub active: bool,
-}
-
-impl Block {
-    pub fn new(block_type: BlockType) -> Block {
-        Block {
-            block_type,
-            active: false,
-        }
-    }
-
-    /// Using internal state determine output in direction given
-    pub fn output(&self, dir: Direction) -> bool {
-        match &self.block_type {
-            BlockType::Arrow(n) if *n == dir => self.active,
-            BlockType::NotArrow(n) if *n == dir => self.active,
-            BlockType::Split(n) if *n == dir  => self.active,
-            BlockType::Split(n) if *n == Direction::opposite(dir) => self.active,
-            _ => false,
-        }
-
-        // if let BlockType::Arrow(d) = &self.block_type {
-        //     if d == &dir {
-        //         return self.active;
-        //     }
-        // }
-
-        // if let BlockType::NotArrow(d) = &self.block_type {
-        //     if d == &dir {
-        //         return self.active;
-        //     }
-        // }
-
-        // let opposite = Direction::opposite(dir.clone());
-        // if let BlockType::Split(d) = &self.block_type {
-        //     if d == &dir || d == &opposite {
-        //         return self.active;
-        //     }
-        // }
-
-        // false
-    }
-
-    /// Using external outputs, calculate the block and return solution
-    pub fn calc(&self, inputs: Vec<bool>) -> bool {
-        let is_any_surrounding = inputs.iter().any(|&x| x);
-
-        match self.block_type {
-            BlockType::NotArrow(_) => !is_any_surrounding,
-            _ => is_any_surrounding,
-        }
-    }
-
-    /// When value toggles what other blocks could be changed (influenced)
-    pub fn influences(&self) -> Vec<Direction> {
-        match &self.block_type {
-            BlockType::Arrow(d) => vec![*d],
-            BlockType::NotArrow(d) => vec![*d],
-            BlockType::Split(d) => vec![*d, Direction::opposite(*d)],
-            BlockType::Empty => vec![],
-        }
-    }
-
-    pub fn toggle(&mut self) {
-        self.active = !self.active;
-    }
-}
-
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum Direction {
     Up,
@@ -88,12 +17,62 @@ impl Direction {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Hash)]
 pub enum BlockType {
     Empty,
     Arrow(Direction),
     NotArrow(Direction),
     Split(Direction),
+}
+
+#[derive(Debug, Copy, Clone, Hash, PartialEq)]
+pub struct Block {
+    pub block_type: BlockType,
+    pub active: bool,
+}
+
+impl Block {
+    pub fn new(block_type: BlockType) -> Block {
+        Block {
+            block_type,
+            active: false,
+        }
+    }
+
+    /// Using internal state determine output in direction given
+    pub fn output(self, dir: Direction) -> bool {
+        match &self.block_type {
+            BlockType::Arrow(n) if *n == dir => self.active,
+            BlockType::NotArrow(n) if *n == dir => self.active,
+            BlockType::Split(n) if *n == dir => self.active,
+            BlockType::Split(n) if *n == Direction::opposite(dir) => self.active,
+            _ => false,
+        }
+    }
+
+    /// Using external outputs, calculate the block and return solution
+    pub fn calc(self, inputs: Vec<bool>) -> bool {
+        let is_any_surrounding = inputs.iter().any(|&x| x);
+
+        match self.block_type {
+            BlockType::NotArrow(_) => !is_any_surrounding,
+            _ => is_any_surrounding,
+        }
+    }
+
+    /// When value toggles what other blocks could be changed (influenced)
+    pub fn influences(self) -> Vec<Direction> {
+        match &self.block_type {
+            BlockType::Arrow(d) => vec![*d],
+            BlockType::NotArrow(d) => vec![*d],
+            BlockType::Split(d) => vec![*d, Direction::opposite(*d)],
+            BlockType::Empty => vec![],
+        }
+    }
+
+    pub fn toggle(&mut self) {
+        self.active = !self.active;
+    }
 }
 
 #[cfg(test)]
