@@ -18,6 +18,10 @@ fn main() {
         Pos { x: 0, y: 2 },
     );
     board.set(
+        Block::new(BlockType::NotArrow(Direction::Right)),
+        Pos { x: 0, y: 2 },
+    );
+    board.set(
         Block::new(BlockType::Arrow(Direction::Right)),
         Pos { x: 1, y: 2 },
     );

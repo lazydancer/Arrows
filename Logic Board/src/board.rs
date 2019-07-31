@@ -34,6 +34,7 @@ impl Pos {
 #[derive(Debug)]
 pub struct Board {
     pub blocks: HashMap<Pos, Block>,
+    // Modified includes the block that was there before
     pub modified: Vec<(Pos, Block)>,
 }
 
@@ -45,17 +46,34 @@ impl Board {
 
         Board { blocks, modified }
     }
-    /// Set the block on the board
-    pub fn set(&mut self, block: Block, loc: Pos) {
-       
-        // Find if set is already in modified. If so update it with this new value
 
-        match self.blocks.get(&loc) {
-            Some(from) => self.modified.push((loc, *from)),
-            None => self.modified.push((loc, Block::new(BlockType::Empty))),
+    /// Set block to blocks and modified
+    pub fn set(&mut self, block: Block, loc: Pos) {
+        // Get block coming from
+        let mut from_block = match self.blocks.get(&loc) {
+            Some(from) => *from,
+            None => Block::new(BlockType::Empty),
         };
 
-        self.blocks.insert(loc, block);
+        // If coming from an already updated use old value
+        self.modified
+            .iter()
+            .position(|(pos, _blk)| pos == &loc)
+            .map(|x| {
+                from_block = self.modified[x].1.clone();
+                self.modified.remove(x);
+            });
+
+        // Remove if empty
+        if block.block_type == BlockType::Empty {
+            self.blocks.remove(&loc);
+        } else {
+            self.blocks.insert(loc, block);
+        }
+
+        if block != from_block {
+            self.modified.push((loc, from_block));
+        }
     }
 
     /// Step the board to the next state
@@ -83,13 +101,13 @@ impl Board {
                     .into_iter()
                     .map(|dir| modified_pos.neighbour(dir));
 
-
-                let blocks = to_calc.clone().into_iter().map(|pos| {
-                    match self.blocks.get(&pos) {
+                let blocks = to_calc
+                    .clone()
+                    .into_iter()
+                    .map(|pos| match self.blocks.get(&pos) {
                         Some(x) => *x,
                         None => Block::new(BlockType::Empty),
-                    }
-                });
+                    });
 
                 let to_calc = to_calc.into_iter().zip(blocks);
 
@@ -176,7 +194,16 @@ mod tests {
 
         assert_eq!(board.blocks[&Pos { x: 0, y: 2 }], expected_block);
 
-        assert_eq!(board.modified, vec![(Pos { x: 0, y: 2 }, Block { block_type: BlockType::Empty, active: false })]);
+        assert_eq!(
+            board.modified,
+            vec![(
+                Pos { x: 0, y: 2 },
+                Block {
+                    block_type: BlockType::Empty,
+                    active: false
+                }
+            )]
+        );
     }
 
     #[test]
@@ -191,9 +218,17 @@ mod tests {
             Pos { x: 0, y: 2 },
         );
 
-
-        assert_eq!(board.blocks.get(&Pos { x: 0, y: 2 }), Some(Block::new(BlockType::Arrow(Direction::Left))));
-        assert_eq!(board.modified, vec![(Pos { x: 0, y: 2 }, Block { block_type: BlockType::Empty, active: false })]);
+        //assert_eq!(board.blocks.get(&Pos { x: 0, y: 2 }), Some(Block::new(BlockType::Arrow(Direction::Left))));
+        assert_eq!(
+            board.modified,
+            vec![(
+                Pos { x: 0, y: 2 },
+                Block {
+                    block_type: BlockType::Empty,
+                    active: false
+                }
+            )]
+        );
     }
 
     #[test]
@@ -203,11 +238,7 @@ mod tests {
             Block::new(BlockType::NotArrow(Direction::Right)),
             Pos { x: 0, y: 2 },
         );
-        board.set(
-            Block::new(BlockType::Empty),
-            Pos { x: 0, y: 2 },
-        );
-
+        board.set(Block::new(BlockType::Empty), Pos { x: 0, y: 2 });
 
         assert_eq!(board.blocks.get(&Pos { x: 0, y: 2 }), None);
         assert_eq!(board.modified, vec![]);
@@ -216,10 +247,7 @@ mod tests {
     #[test]
     fn add_empty_over_empty_board() {
         let mut board = Board::new();
-        board.set(
-            Block::new(BlockType::Empty),
-            Pos { x: 0, y: 2 },
-        );
+        board.set(Block::new(BlockType::Empty), Pos { x: 0, y: 2 });
 
         assert_eq!(board.blocks.get(&Pos { x: 0, y: 2 }), None);
         assert_eq!(board.modified, vec![]);
@@ -233,13 +261,28 @@ mod tests {
             Pos { x: 0, y: 2 },
         );
         board.step();
-        board.set(
-            Block::new(BlockType::Empty),
-            Pos { x: 0, y: 2 },
-        );
+        board.set(Block::new(BlockType::Empty), Pos { x: 0, y: 2 });
 
         assert_eq!(board.blocks.get(&Pos { x: 0, y: 2 }), None);
-        assert_eq!(board.modified, vec![(Pos { x: 0, y: 2 }, Block { block_type: BlockType::NotArrow(Direction::Right), active: false })]);
+        assert_eq!(
+            board.modified,
+            vec![
+                (
+                    Pos { x: 1, y: 2 },
+                    Block {
+                        block_type: BlockType::Empty,
+                        active: false
+                    }
+                ),
+                (
+                    Pos { x: 0, y: 2 },
+                    Block {
+                        block_type: BlockType::NotArrow(Direction::Right),
+                        active: true
+                    }
+                )
+            ]
+        );
     }
 
     #[test]
