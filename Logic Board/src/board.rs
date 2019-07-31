@@ -56,13 +56,12 @@ impl Board {
         };
 
         // If coming from an already updated use old value
-        self.modified
+        if let Some(x) = self.modified
             .iter()
-            .position(|(pos, _blk)| pos == &loc)
-            .map(|x| {
-                from_block = self.modified[x].1.clone();
+            .position(|(pos, _blk)| pos == &loc) {
+                from_block = self.modified[x].1;
                 self.modified.remove(x);
-            });
+            };
 
         // Remove if empty
         if block.block_type == BlockType::Empty {
@@ -103,13 +102,12 @@ impl Board {
 
                 let blocks = to_calc
                     .clone()
-                    .into_iter()
                     .map(|pos| match self.blocks.get(&pos) {
                         Some(x) => *x,
                         None => Block::new(BlockType::Empty),
                     });
 
-                let to_calc = to_calc.into_iter().zip(blocks);
+                let to_calc = to_calc.zip(blocks);
 
                 modified_staged.extend(to_calc);
             }
@@ -218,7 +216,6 @@ mod tests {
             Pos { x: 0, y: 2 },
         );
 
-        //assert_eq!(board.blocks.get(&Pos { x: 0, y: 2 }), Some(Block::new(BlockType::Arrow(Direction::Left))));
         assert_eq!(
             board.modified,
             vec![(
@@ -314,5 +311,40 @@ mod tests {
 
         assert_eq!(board.blocks[&Pos { x: 0, y: 1 }].active, true);
         assert_eq!(board.blocks[&Pos { x: 1, y: 1 }].active, true);
+    }
+
+    #[test]
+    fn step_from_remove() {
+        let mut board = Board::new();
+        board.set(
+            Block::new(BlockType::NotArrow(Direction::Right)),
+            Pos { x: 0, y: 1 },
+        );
+        board.set(
+            Block::new(BlockType::Arrow(Direction::Right)),
+            Pos { x: 1, y: 1 },
+        );
+
+        board.step();
+        board.step();
+
+        assert_eq!(board.blocks[&Pos { x: 0, y: 1 }].active, true);
+        assert_eq!(board.blocks[&Pos { x: 1, y: 1 }].active, true);
+
+
+        board.set(
+            Block::new(BlockType::Empty),
+            Pos { x: 0, y: 1 },
+        );
+
+        board.step();
+
+        assert_eq!(board.blocks.get(&Pos { x: 0, y: 1 }), None);
+        assert_eq!(board.blocks[&Pos { x: 1, y: 1 }].active, true);
+
+        board.step();
+
+        assert_eq!(board.blocks.get(&Pos { x: 0, y: 1 }), None);
+        assert_eq!(board.blocks[&Pos { x: 1, y: 1 }].active, false);
     }
 }
