@@ -1,4 +1,5 @@
-//! A collection of semi-random shape and image drawing examples.
+use std::env;
+use std::path;
 
 use cgmath;
 
@@ -9,35 +10,68 @@ use ggez::graphics::{Color, DrawMode, DrawParam};
 use ggez::nalgebra::Point2;
 use ggez::timer;
 use ggez::{Context, GameResult};
-use std::env;
-use std::path;
+
+struct Assets {
+    arrow_active: graphics::Image,
+}
+
+impl Assets {
+    fn new(ctx: &mut Context) -> GameResult<Assets> {
+        let arrow_active = graphics::Image::new(ctx, "/arrow_active.png")?;
+
+        Ok(Assets { arrow_active })
+    }
+}
 
 struct MainState {
-    image1: graphics::Image,
+    arrow_active: graphics::Image,
     image2_linear: graphics::Image,
     image2_nearest: graphics::Image,
     meshes: Vec<graphics::Mesh>,
     rotation: f32,
+    assets: Assets,
+    display_size: (i32, i32),
+    view_top_left: (i32, i32),
 }
 
 impl MainState {
     /// Load images and create meshes.
     fn new(ctx: &mut Context) -> GameResult<MainState> {
-        let image1 = graphics::Image::new(ctx, "/arrow_active.png")?;
+        let arrow_active = graphics::Image::new(ctx, "/arrow_active.png")?;
         let image2_linear = graphics::Image::new(ctx, "/shot.png")?;
         let mut image2_nearest = graphics::Image::new(ctx, "/shot.png")?;
         image2_nearest.set_filter(graphics::FilterMode::Nearest);
-
         let meshes = vec![build_mesh(ctx)?, build_textured_triangle(ctx)?];
+
+        let assets = Assets::new(ctx)?;
+
+        let (width, height) = graphics::drawable_size(ctx);
+        let display_size = (width as i32, height as i32);
+        let view_top_left = (-10, -10);
+
+        println!("{:?}", display_size);
+
         let s = MainState {
-            image1,
+            arrow_active,
             image2_linear,
             image2_nearest,
             meshes,
             rotation: 1.0,
+            assets,
+            display_size,
+            view_top_left,
         };
 
         Ok(s)
+    }
+
+    fn draw_arrow(&self, ctx: &mut Context, arrows: Vec<((i32, i32), u8)>) -> GameResult {
+        let image = &self.assets.arrow_active;
+        let drawparams = graphics::DrawParam::new()
+            .dest(cgmath::Point2::new(200.0, 200.0))
+            .rotation(3.14159 / 2.0)
+            .offset(Point2::new(0.5, 0.5));
+        graphics::draw(ctx, image, drawparams)
     }
 }
 
@@ -116,11 +150,16 @@ impl event::EventHandler for MainState {
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         graphics::clear(ctx, [0.1, 0.2, 0.3, 1.0].into());
 
+        let mut arrows = vec![];
+        arrows.push(((1, 1), 0));
+
+        self.draw_arrow(ctx, arrows);
+
         // Draw an image.
         let dst = cgmath::Point2::new(300.0, 300.0);
         graphics::draw(
             ctx,
-            &self.image1,
+            &self.arrow_active,
             graphics::DrawParam::new()
                 .dest(dst)
                 .rotation(3.14159 / 2.0)
