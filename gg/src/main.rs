@@ -21,6 +21,13 @@ impl Assets {
 
         Ok(Assets { arrow_active })
     }
+
+    fn actor_image(&mut self, actor: i32) -> &mut graphics::Image {
+        match actor {
+            1 => &mut self.arrow_active,
+            _ => &mut self.arrow_active,
+        }
+    }
 }
 
 struct MainState {
@@ -64,15 +71,20 @@ impl MainState {
 
         Ok(s)
     }
+}
 
-    fn draw_arrow(&self, ctx: &mut Context, arrows: Vec<((i32, i32), u8)>) -> GameResult {
-        let image = &self.assets.arrow_active;
-        let drawparams = graphics::DrawParam::new()
-            .dest(cgmath::Point2::new(200.0, 200.0))
-            .rotation(3.14159 / 2.0)
-            .offset(Point2::new(0.5, 0.5));
-        graphics::draw(ctx, image, drawparams)
-    }
+fn draw_arrow(
+    assets: &mut Assets,
+    ctx: &mut Context,
+    arrow_coords: (i32, i32),
+    arrow_type: u8,
+) -> GameResult {
+    let image = assets.actor_image(1);
+    let drawparams = graphics::DrawParam::new()
+        .dest(cgmath::Point2::new(200.0, 200.0))
+        .rotation(3.14159 / 2.0)
+        .offset(Point2::new(0.5, 0.5));
+    graphics::draw(ctx, image, drawparams)
 }
 
 fn build_mesh(ctx: &mut Context) -> GameResult<graphics::Mesh> {
@@ -150,10 +162,9 @@ impl event::EventHandler for MainState {
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         graphics::clear(ctx, [0.1, 0.2, 0.3, 1.0].into());
 
-        let mut arrows = vec![];
-        arrows.push(((1, 1), 0));
+        let assets = &mut self.assets;
 
-        self.draw_arrow(ctx, arrows);
+        draw_arrow(assets, ctx, (1, 1), 1);
 
         // Draw an image.
         let dst = cgmath::Point2::new(300.0, 300.0);
