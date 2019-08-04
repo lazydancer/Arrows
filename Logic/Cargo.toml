@@ -1,5 +1,5 @@
 [package]
-name = "board"
+name = "logic"
 version = "0.1.0"
 authors = ["lazydancer <jrpucula@gmail.com>"]
 edition = "2018"

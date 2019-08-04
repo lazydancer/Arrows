@@ -11,6 +11,8 @@ use ggez::nalgebra as na;
 use ggez::timer;
 use ggez::{Context, GameResult};
 
+use logic::Logic;
+
 type Point2 = na::Point2<f32>;
 
 const ICON_SIZE: i32 = 16;
@@ -113,31 +115,6 @@ impl Assets {
     }
 }
 
-struct MainState {
-    assets: Assets,
-    display_size: (i32, i32),
-    view_top_left: (i32, i32),
-}
-
-impl MainState {
-    /// Load images and create meshes.
-    fn new(ctx: &mut Context) -> GameResult<MainState> {
-        let assets = Assets::new(ctx)?;
-
-        let (width, height) = graphics::drawable_size(ctx);
-        let display_size = (width as i32, height as i32);
-        let view_top_left = (-1, -1);
-
-        let s = MainState {
-            assets,
-            display_size,
-            view_top_left,
-        };
-
-        Ok(s)
-    }
-}
-
 fn draw_arrow(
     assets: &mut Assets,
     ctx: &mut Context,
@@ -174,6 +151,35 @@ fn pos_to_screen_coords(
     }
 
     Some(Point2::new(pos.0 as f32, pos.1 as f32))
+}
+
+struct MainState {
+    logic: Logic,
+    assets: Assets,
+    display_size: (i32, i32),
+    view_top_left: (i32, i32),
+}
+
+impl MainState {
+    /// Load images and create meshes.
+    fn new(ctx: &mut Context) -> GameResult<MainState> {
+        let mut logic = Logic::new();
+        logic.set();
+        let assets = Assets::new(ctx)?;
+
+        let (width, height) = graphics::drawable_size(ctx);
+        let display_size = (width as i32, height as i32);
+        let view_top_left = (-1, -1);
+
+        let s = MainState {
+            logic,
+            assets,
+            display_size,
+            view_top_left,
+        };
+
+        Ok(s)
+    }
 }
 
 impl event::EventHandler for MainState {

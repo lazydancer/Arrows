@@ -11,3 +11,4 @@ ggez = "0.5.1"
 rand = "0.7"
 mint = "0.5"
 cgmath = { version = "0.17", features = ["mint"]}
+logic = { path = "../Logic" }
