@@ -28,6 +28,20 @@ enum Direction {
     Left,
 }
 
+impl Direction {
+    fn radians(&self) -> f32 {
+        // 90 Deg Rotation
+        let turn = 3.14159 / 2.0;
+
+        match self {
+            Direction::Right => 0.0,
+            Direction::Down => turn * 1.0,
+            Direction::Left => turn * 2.0,
+            Direction::Up => turn * 3.0,
+        }
+    }
+}
+
 struct Arrow {
     cast: Cast,
     direction: Direction,
@@ -62,7 +76,7 @@ impl Assets {
         })
     }
 
-    fn image(&mut self, arrow: Arrow) -> &mut graphics::Image {
+    fn image(&mut self, arrow: &Arrow) -> &mut graphics::Image {
         match arrow {
             Arrow {
                 cast: Cast::Arrow,
@@ -112,7 +126,7 @@ impl MainState {
 
         let (width, height) = graphics::drawable_size(ctx);
         let display_size = (width as i32, height as i32);
-        let view_top_left = (-10, -10);
+        let view_top_left = (-1, -1);
 
         let s = MainState {
             assets,
@@ -128,16 +142,14 @@ fn draw_arrow(
     assets: &mut Assets,
     ctx: &mut Context,
     arrow_coords: Point2,
-    arrow_type: u8,
+    arrow: Arrow,
 ) -> GameResult {
-    let image = assets.image(Arrow {
-        cast: Cast::Arrow,
-        direction: Direction::Up,
-        active: true,
-    });
+    let image = assets.image(&arrow);
+    let rotation = arrow.direction.radians();
+
     let drawparams = graphics::DrawParam::new()
         .dest(arrow_coords)
-        .rotation(3.14159 / 2.0)
+        .rotation(rotation)
         .offset(Point2::new(0.5, 0.5));
     graphics::draw(ctx, image, drawparams)
 }
@@ -178,9 +190,16 @@ impl event::EventHandler for MainState {
         let assets = &mut self.assets;
 
         let coord = pos_to_screen_coords(&self.display_size, &self.view_top_left, (1, 1));
+        let arrow = Arrow {
+            cast: Cast::Arrow,
+            direction: Direction::Up,
+            active: true,
+        };
+
         if let Some(coord) = coord {
-            draw_arrow(assets, ctx, coord, 1);
+            draw_arrow(assets, ctx, coord, arrow);
         }
+
         // Finished drawing, show it all on the screen!
         graphics::present(ctx)?;
         Ok(())
