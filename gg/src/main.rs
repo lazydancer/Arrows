@@ -7,35 +7,99 @@ use ggez;
 use ggez::event;
 use ggez::graphics;
 use ggez::graphics::{Color, DrawMode, DrawParam};
-use ggez::nalgebra::Point2;
+use ggez::nalgebra as na;
 use ggez::timer;
 use ggez::{Context, GameResult};
 
+type Point2 = na::Point2<f32>;
+
+const ICON_SIZE: i32 = 16;
+
+enum Cast {
+    Arrow,
+    Invert,
+    Split,
+}
+
+enum Direction {
+    Up,
+    Right,
+    Down,
+    Left,
+}
+
+struct Arrow {
+    cast: Cast,
+    direction: Direction,
+    active: bool,
+}
+
 struct Assets {
     arrow_active: graphics::Image,
+    arrow_inactive: graphics::Image,
+    invert_active: graphics::Image,
+    invert_inactive: graphics::Image,
+    split_active: graphics::Image,
+    split_inactive: graphics::Image,
 }
 
 impl Assets {
     fn new(ctx: &mut Context) -> GameResult<Assets> {
         let arrow_active = graphics::Image::new(ctx, "/arrow_active.png")?;
+        let arrow_inactive = graphics::Image::new(ctx, "/arrow_inactive.png")?;
+        let invert_active = graphics::Image::new(ctx, "/invert_active.png")?;
+        let invert_inactive = graphics::Image::new(ctx, "/invert_inactive.png")?;
+        let split_active = graphics::Image::new(ctx, "/split_active.png")?;
+        let split_inactive = graphics::Image::new(ctx, "/split_inactive.png")?;
 
-        Ok(Assets { arrow_active })
+        Ok(Assets {
+            arrow_active,
+            arrow_inactive,
+            invert_active,
+            invert_inactive,
+            split_active,
+            split_inactive,
+        })
     }
 
-    fn actor_image(&mut self, actor: i32) -> &mut graphics::Image {
-        match actor {
-            1 => &mut self.arrow_active,
+    fn image(&mut self, arrow: Arrow) -> &mut graphics::Image {
+        match arrow {
+            Arrow {
+                cast: Cast::Arrow,
+                active: true,
+                ..
+            } => &mut self.arrow_active,
+            Arrow {
+                cast: Cast::Arrow,
+                active: false,
+                ..
+            } => &mut self.arrow_inactive,
+            Arrow {
+                cast: Cast::Invert,
+                active: true,
+                ..
+            } => &mut self.invert_active,
+            Arrow {
+                cast: Cast::Invert,
+                active: true,
+                ..
+            } => &mut self.invert_inactive,
+            Arrow {
+                cast: Cast::Split,
+                active: true,
+                ..
+            } => &mut self.split_active,
+            Arrow {
+                cast: Cast::Split,
+                active: true,
+                ..
+            } => &mut self.split_inactive,
             _ => &mut self.arrow_active,
         }
     }
 }
 
 struct MainState {
-    arrow_active: graphics::Image,
-    image2_linear: graphics::Image,
-    image2_nearest: graphics::Image,
-    meshes: Vec<graphics::Mesh>,
-    rotation: f32,
     assets: Assets,
     display_size: (i32, i32),
     view_top_left: (i32, i32),
@@ -44,26 +108,13 @@ struct MainState {
 impl MainState {
     /// Load images and create meshes.
     fn new(ctx: &mut Context) -> GameResult<MainState> {
-        let arrow_active = graphics::Image::new(ctx, "/arrow_active.png")?;
-        let image2_linear = graphics::Image::new(ctx, "/shot.png")?;
-        let mut image2_nearest = graphics::Image::new(ctx, "/shot.png")?;
-        image2_nearest.set_filter(graphics::FilterMode::Nearest);
-        let meshes = vec![build_mesh(ctx)?, build_textured_triangle(ctx)?];
-
         let assets = Assets::new(ctx)?;
 
         let (width, height) = graphics::drawable_size(ctx);
         let display_size = (width as i32, height as i32);
         let view_top_left = (-10, -10);
 
-        println!("{:?}", display_size);
-
         let s = MainState {
-            arrow_active,
-            image2_linear,
-            image2_nearest,
-            meshes,
-            rotation: 1.0,
             assets,
             display_size,
             view_top_left,
@@ -76,151 +127,60 @@ impl MainState {
 fn draw_arrow(
     assets: &mut Assets,
     ctx: &mut Context,
-    arrow_coords: (i32, i32),
+    arrow_coords: Point2,
     arrow_type: u8,
 ) -> GameResult {
-    let image = assets.actor_image(1);
+    let image = assets.image(Arrow {
+        cast: Cast::Arrow,
+        direction: Direction::Up,
+        active: true,
+    });
     let drawparams = graphics::DrawParam::new()
-        .dest(cgmath::Point2::new(200.0, 200.0))
+        .dest(arrow_coords)
         .rotation(3.14159 / 2.0)
         .offset(Point2::new(0.5, 0.5));
     graphics::draw(ctx, image, drawparams)
 }
 
-fn build_mesh(ctx: &mut Context) -> GameResult<graphics::Mesh> {
-    let mb = &mut graphics::MeshBuilder::new();
+fn pos_to_screen_coords(
+    window_size: &(i32, i32),
+    view_top_left: &(i32, i32),
+    pos: (i32, i32),
+) -> Option<Point2> {
+    // First translate in-game view, make view top left to 0,0
+    let pos = (pos.0 - view_top_left.0, pos.1 - view_top_left.1);
 
-    mb.line(
-        &[
-            Point2::new(200.0, 200.0),
-            Point2::new(400.0, 200.0),
-            Point2::new(400.0, 400.0),
-            Point2::new(200.0, 400.0),
-            Point2::new(200.0, 300.0),
-        ],
-        4.0,
-        Color::new(1.0, 0.0, 0.0, 1.0),
-    )?;
+    // Then 'grow' in-game position to window size
+    let pos = (pos.0 * ICON_SIZE, pos.1 * ICON_SIZE);
 
-    mb.ellipse(
-        DrawMode::fill(),
-        Point2::new(600.0, 200.0),
-        50.0,
-        120.0,
-        1.0,
-        Color::new(1.0, 1.0, 0.0, 1.0),
-    );
+    if pos.0 + ICON_SIZE > window_size.0 {
+        return None;
+    }
 
-    mb.circle(
-        DrawMode::fill(),
-        Point2::new(600.0, 380.0),
-        40.0,
-        1.0,
-        Color::new(1.0, 0.0, 1.0, 1.0),
-    );
+    if pos.1 + ICON_SIZE > window_size.1 {
+        return None;
+    }
 
-    mb.build(ctx)
-}
-
-fn build_textured_triangle(ctx: &mut Context) -> GameResult<graphics::Mesh> {
-    let mb = &mut graphics::MeshBuilder::new();
-    let triangle_verts = vec![
-        graphics::Vertex {
-            pos: [100.0, 100.0],
-            uv: [1.0, 1.0],
-            color: [1.0, 0.0, 0.0, 1.0],
-        },
-        graphics::Vertex {
-            pos: [0.0, 100.0],
-            uv: [0.0, 1.0],
-            color: [0.0, 1.0, 0.0, 1.0],
-        },
-        graphics::Vertex {
-            pos: [0.0, 0.0],
-            uv: [0.0, 0.0],
-            color: [0.0, 0.0, 1.0, 1.0],
-        },
-    ];
-
-    let triangle_indices = vec![0, 1, 2];
-
-    let i = graphics::Image::new(ctx, "/rock.png")?;
-    mb.raw(&triangle_verts, &triangle_indices, Some(i));
-    mb.build(ctx)
+    Some(Point2::new(pos.0 as f32, pos.1 as f32))
 }
 
 impl event::EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
         const DESIRED_FPS: u32 = 60;
 
-        while timer::check_update_time(ctx, DESIRED_FPS) {
-            self.rotation += 0.01;
-        }
+        while timer::check_update_time(ctx, DESIRED_FPS) {}
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
-        graphics::clear(ctx, [0.1, 0.2, 0.3, 1.0].into());
+        graphics::clear(ctx, [0.0, 0.0, 0.0, 1.0].into());
 
         let assets = &mut self.assets;
 
-        draw_arrow(assets, ctx, (1, 1), 1);
-
-        // Draw an image.
-        let dst = cgmath::Point2::new(300.0, 300.0);
-        graphics::draw(
-            ctx,
-            &self.arrow_active,
-            graphics::DrawParam::new()
-                .dest(dst)
-                .rotation(3.14159 / 2.0)
-                .offset(Point2::new(0.5, 0.5)),
-        )?;
-
-        // Draw an image with some options, and different filter modes.
-        let dst = cgmath::Point2::new(200.0, 100.0);
-        let dst2 = cgmath::Point2::new(400.0, 400.0);
-        let scale = cgmath::Vector2::new(10.0, 10.0);
-
-        graphics::draw(
-            ctx,
-            &self.image2_linear,
-            graphics::DrawParam::new()
-                .dest(dst)
-                .rotation(self.rotation)
-                .scale(scale),
-        )?;
-        graphics::draw(
-            ctx,
-            &self.image2_nearest,
-            graphics::DrawParam::new()
-                .dest(dst2)
-                .rotation(self.rotation)
-                .offset(Point2::new(0.5, 0.5))
-                .scale(scale),
-        )?;
-
-        // Create and draw a filled rectangle mesh.
-        let rect = graphics::Rect::new(450.0, 450.0, 50.0, 50.0);
-        let r1 =
-            graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect, graphics::WHITE)?;
-        graphics::draw(ctx, &r1, DrawParam::default())?;
-
-        // Create and draw a stroked rectangle mesh.
-        let rect = graphics::Rect::new(450.0, 450.0, 50.0, 50.0);
-        let r2 = graphics::Mesh::new_rectangle(
-            ctx,
-            graphics::DrawMode::stroke(1.0),
-            rect,
-            graphics::Color::new(1.0, 0.0, 0.0, 1.0),
-        )?;
-        graphics::draw(ctx, &r2, DrawParam::default())?;
-
-        // Draw some pre-made meshes
-        for m in &self.meshes {
-            graphics::draw(ctx, m, DrawParam::new())?;
+        let coord = pos_to_screen_coords(&self.display_size, &self.view_top_left, (1, 1));
+        if let Some(coord) = coord {
+            draw_arrow(assets, ctx, coord, 1);
         }
-
         // Finished drawing, show it all on the screen!
         graphics::present(ctx)?;
         Ok(())
