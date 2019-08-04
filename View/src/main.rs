@@ -11,43 +11,22 @@ use ggez::nalgebra as na;
 use ggez::timer;
 use ggez::{Context, GameResult};
 
-use logic::Logic;
+use logic::{Block, BlockType, Direction, Logic, Pos};
 
 type Point2 = na::Point2<f32>;
 
 const ICON_SIZE: i32 = 16;
 
-enum Cast {
-    Arrow,
-    Invert,
-    Split,
-}
+fn radians(dir: Direction) -> f32 {
+    // 90 Deg Rotation
+    let turn = 3.14159 / 2.0;
 
-enum Direction {
-    Up,
-    Right,
-    Down,
-    Left,
-}
-
-impl Direction {
-    fn radians(&self) -> f32 {
-        // 90 Deg Rotation
-        let turn = 3.14159 / 2.0;
-
-        match self {
-            Direction::Right => 0.0,
-            Direction::Down => turn * 1.0,
-            Direction::Left => turn * 2.0,
-            Direction::Up => turn * 3.0,
-        }
+    match dir {
+        Direction::Right => 0.0,
+        Direction::Down => turn * 1.0,
+        Direction::Left => turn * 2.0,
+        Direction::Up => turn * 3.0,
     }
-}
-
-struct Arrow {
-    cast: Cast,
-    direction: Direction,
-    active: bool,
 }
 
 struct Assets {
@@ -78,39 +57,30 @@ impl Assets {
         })
     }
 
-    fn image(&mut self, arrow: &Arrow) -> &mut graphics::Image {
-        match arrow {
-            Arrow {
-                cast: Cast::Arrow,
-                active: true,
-                ..
-            } => &mut self.arrow_active,
-            Arrow {
-                cast: Cast::Arrow,
-                active: false,
-                ..
-            } => &mut self.arrow_inactive,
-            Arrow {
-                cast: Cast::Invert,
-                active: true,
-                ..
-            } => &mut self.invert_active,
-            Arrow {
-                cast: Cast::Invert,
-                active: true,
-                ..
-            } => &mut self.invert_inactive,
-            Arrow {
-                cast: Cast::Split,
-                active: true,
-                ..
-            } => &mut self.split_active,
-            Arrow {
-                cast: Cast::Split,
-                active: true,
-                ..
-            } => &mut self.split_inactive,
-            _ => &mut self.arrow_active,
+    fn image(&mut self, block: &Block) -> &mut graphics::Image {
+        match block.block_type {
+            BlockType::Arrow(_) => {
+                if block.active {
+                    &mut self.arrow_active
+                } else {
+                    &mut self.arrow_inactive
+                }
+            }
+            BlockType::NotArrow(_) => {
+                if block.active {
+                    &mut self.invert_active
+                } else {
+                    &mut self.invert_inactive
+                }
+            }
+            BlockType::Split(_) => {
+                if block.active {
+                    &mut self.split_active
+                } else {
+                    &mut self.split_inactive
+                }
+            }
+            BlockType::Empty => &mut self.split_active,
         }
     }
 }
@@ -119,10 +89,10 @@ fn draw_arrow(
     assets: &mut Assets,
     ctx: &mut Context,
     arrow_coords: Point2,
-    arrow: Arrow,
+    arrow: Block,
 ) -> GameResult {
     let image = assets.image(&arrow);
-    let rotation = arrow.direction.radians();
+    let rotation = radians(arrow.get_direction());
 
     let drawparams = graphics::DrawParam::new()
         .dest(arrow_coords)
@@ -165,6 +135,7 @@ impl MainState {
     fn new(ctx: &mut Context) -> GameResult<MainState> {
         let mut logic = Logic::new();
         logic.set();
+
         let assets = Assets::new(ctx)?;
 
         let (width, height) = graphics::drawable_size(ctx);
@@ -184,9 +155,11 @@ impl MainState {
 
 impl event::EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
-        const DESIRED_FPS: u32 = 60;
+        const DESIRED_FPS: u32 = 2;
 
-        while timer::check_update_time(ctx, DESIRED_FPS) {}
+        while timer::check_update_time(ctx, DESIRED_FPS) {
+            self.logic.step();
+        }
         Ok(())
     }
 
@@ -195,15 +168,12 @@ impl event::EventHandler for MainState {
 
         let assets = &mut self.assets;
 
-        let coord = pos_to_screen_coords(&self.display_size, &self.view_top_left, (1, 1));
-        let arrow = Arrow {
-            cast: Cast::Arrow,
-            direction: Direction::Up,
-            active: true,
-        };
-
-        if let Some(coord) = coord {
-            draw_arrow(assets, ctx, coord, arrow);
+        for (pos, block) in self.logic.get_arrows() {
+            let coord =
+                pos_to_screen_coords(&self.display_size, &self.view_top_left, (pos.x, pos.y));
+            if let Some(coord) = coord {
+                draw_arrow(assets, ctx, coord, block);
+            }
         }
 
         // Finished drawing, show it all on the screen!

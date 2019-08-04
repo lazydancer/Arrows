@@ -39,6 +39,15 @@ impl Block {
         }
     }
 
+    pub fn get_direction(&self) -> Direction {
+        match self.block_type {
+            BlockType::Empty => Direction::Right,
+            BlockType::Arrow(dir) => dir.clone(),
+            BlockType::NotArrow(dir) => dir.clone(),
+            BlockType::Split(dir) => dir.clone(),
+        }
+    }
+
     /// Using internal state determine output in direction given
     pub fn output(self, dir: Direction) -> bool {
         match &self.block_type {
