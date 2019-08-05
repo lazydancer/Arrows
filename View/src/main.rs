@@ -30,57 +30,138 @@ fn radians(dir: Direction) -> f32 {
 }
 
 struct Assets {
-    arrow_active: graphics::Image,
-    arrow_inactive: graphics::Image,
-    invert_active: graphics::Image,
-    invert_inactive: graphics::Image,
-    split_active: graphics::Image,
-    split_inactive: graphics::Image,
+    arrow_up_active: graphics::Image,
+    arrow_right_active: graphics::Image,
+    arrow_down_active: graphics::Image,
+    arrow_left_active: graphics::Image,
+    arrow_up_inactive: graphics::Image,
+    arrow_right_inactive: graphics::Image,
+    arrow_down_inactive: graphics::Image,
+    arrow_left_inactive: graphics::Image,
+    invert_up_active: graphics::Image,
+    invert_right_active: graphics::Image,
+    invert_down_active: graphics::Image,
+    invert_left_active: graphics::Image,
+    invert_up_inactive: graphics::Image,
+    invert_right_inactive: graphics::Image,
+    invert_down_inactive: graphics::Image,
+    invert_left_inactive: graphics::Image,
+    split_horizontal_active: graphics::Image,
+    split_vertical_active: graphics::Image,
+    split_horizontal_inactive: graphics::Image,
+    split_vertical_inactive: graphics::Image,
 }
 
 impl Assets {
     fn new(ctx: &mut Context) -> GameResult<Assets> {
-        let arrow_active = graphics::Image::new(ctx, "/arrow_active.png")?;
-        let arrow_inactive = graphics::Image::new(ctx, "/arrow_inactive.png")?;
-        let invert_active = graphics::Image::new(ctx, "/invert_active.png")?;
-        let invert_inactive = graphics::Image::new(ctx, "/invert_inactive.png")?;
-        let split_active = graphics::Image::new(ctx, "/split_active.png")?;
-        let split_inactive = graphics::Image::new(ctx, "/split_inactive.png")?;
+        let arrow_up_active = graphics::Image::new(ctx, "/arrow_up_active.png")?;
+        let arrow_right_active = graphics::Image::new(ctx, "/arrow_right_active.png")?;
+        let arrow_down_active = graphics::Image::new(ctx, "/arrow_down_active.png")?;
+        let arrow_left_active = graphics::Image::new(ctx, "/arrow_left_active.png")?;
+
+        let arrow_up_inactive = graphics::Image::new(ctx, "/arrow_up_inactive.png")?;
+        let arrow_right_inactive = graphics::Image::new(ctx, "/arrow_right_inactive.png")?;
+        let arrow_down_inactive = graphics::Image::new(ctx, "/arrow_down_inactive.png")?;
+        let arrow_left_inactive = graphics::Image::new(ctx, "/arrow_left_inactive.png")?;
+
+        let invert_up_active = graphics::Image::new(ctx, "/invert_up_active.png")?;
+        let invert_right_active = graphics::Image::new(ctx, "/invert_right_active.png")?;
+        let invert_down_active = graphics::Image::new(ctx, "/invert_down_active.png")?;
+        let invert_left_active = graphics::Image::new(ctx, "/invert_left_active.png")?;
+
+        let invert_up_inactive = graphics::Image::new(ctx, "/invert_up_inactive.png")?;
+        let invert_down_inactive = graphics::Image::new(ctx, "/invert_down_inactive.png")?;
+        let invert_right_inactive = graphics::Image::new(ctx, "/invert_right_inactive.png")?;
+        let invert_left_inactive = graphics::Image::new(ctx, "/invert_left_inactive.png")?;
+
+        let split_horizontal_active = graphics::Image::new(ctx, "/split_horizontal_active.png")?;
+        let split_vertical_active = graphics::Image::new(ctx, "/split_vertical_active.png")?;
+
+        let split_horizontal_inactive =
+            graphics::Image::new(ctx, "/split_horizontal_inactive.png")?;
+        let split_vertical_inactive = graphics::Image::new(ctx, "/split_vertical_inactive.png")?;
 
         Ok(Assets {
-            arrow_active,
-            arrow_inactive,
-            invert_active,
-            invert_inactive,
-            split_active,
-            split_inactive,
+            arrow_up_active,
+            arrow_right_active,
+            arrow_down_active,
+            arrow_left_active,
+            arrow_up_inactive,
+            arrow_right_inactive,
+            arrow_down_inactive,
+            arrow_left_inactive,
+            invert_up_active,
+            invert_right_active,
+            invert_down_active,
+            invert_left_active,
+            invert_up_inactive,
+            invert_right_inactive,
+            invert_down_inactive,
+            invert_left_inactive,
+            split_horizontal_active,
+            split_vertical_active,
+            split_horizontal_inactive,
+            split_vertical_inactive,
         })
     }
 
     fn image(&mut self, block: &Block) -> &mut graphics::Image {
         match block.block_type {
-            BlockType::Arrow(_) => {
+            BlockType::Arrow(dir) => {
                 if block.active {
-                    &mut self.arrow_active
+                    match dir {
+                        Direction::Up => &mut self.arrow_up_active,
+                        Direction::Right => &mut self.arrow_right_active,
+                        Direction::Down => &mut self.arrow_down_active,
+                        Direction::Left => &mut self.arrow_left_active,
+                    }
                 } else {
-                    &mut self.arrow_inactive
+                    match dir {
+                        Direction::Up => &mut self.arrow_up_inactive,
+                        Direction::Right => &mut self.arrow_right_inactive,
+                        Direction::Down => &mut self.arrow_down_inactive,
+                        Direction::Left => &mut self.arrow_left_inactive,
+                    }
                 }
             }
-            BlockType::NotArrow(_) => {
+
+            BlockType::NotArrow(dir) => {
                 if block.active {
-                    &mut self.invert_active
+                    match dir {
+                        Direction::Up => &mut self.invert_up_active,
+                        Direction::Right => &mut self.invert_right_active,
+                        Direction::Down => &mut self.invert_down_active,
+                        Direction::Left => &mut self.invert_left_active,
+                    }
                 } else {
-                    &mut self.invert_inactive
+                    match dir {
+                        Direction::Up => &mut self.invert_up_inactive,
+                        Direction::Right => &mut self.invert_right_inactive,
+                        Direction::Down => &mut self.invert_down_inactive,
+                        Direction::Left => &mut self.invert_left_inactive,
+                    }
                 }
             }
-            BlockType::Split(_) => {
+
+            BlockType::Split(dir) => {
                 if block.active {
-                    &mut self.split_active
+                    match dir {
+                        Direction::Up => &mut self.split_vertical_active,
+                        Direction::Right => &mut self.split_horizontal_active,
+                        Direction::Down => &mut self.split_vertical_active,
+                        Direction::Left => &mut self.split_horizontal_active,
+                    }
                 } else {
-                    &mut self.split_inactive
+                    match dir {
+                        Direction::Up => &mut self.split_vertical_inactive,
+                        Direction::Right => &mut self.split_horizontal_inactive,
+                        Direction::Down => &mut self.split_vertical_inactive,
+                        Direction::Left => &mut self.split_horizontal_inactive,
+                    }
                 }
             }
-            BlockType::Empty => &mut self.split_active,
+
+            BlockType::Empty => &mut self.split_vertical_active,
         }
     }
 }
@@ -92,11 +173,9 @@ fn draw_arrow(
     arrow: Block,
 ) -> GameResult {
     let image = assets.image(&arrow);
-    let rotation = radians(arrow.get_direction());
 
     let drawparams = graphics::DrawParam::new()
         .dest(arrow_coords)
-        .rotation(rotation)
         .offset(Point2::new(0.5, 0.5));
     graphics::draw(ctx, image, drawparams)
 }
@@ -155,7 +234,7 @@ impl MainState {
 
 impl event::EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
-        const DESIRED_FPS: u32 = 2;
+        const DESIRED_FPS: u32 = 5;
 
         while timer::check_update_time(ctx, DESIRED_FPS) {
             self.logic.step();
