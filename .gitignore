@@ -2,4 +2,4 @@ __pycache__
 .vscode/
 /target
 **/*.rs.bk
-/View/target
+/*/*/target
