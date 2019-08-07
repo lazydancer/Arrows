@@ -17,6 +17,28 @@ type Point2 = na::Point2<f32>;
 
 const ICON_SIZE: i32 = 16;
 
+pub fn start() -> GameResult {
+    // let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
+    //     let mut path = path::PathBuf::from(manifest_dir);
+    //     path.push("resources");
+    //     path
+    // } else {
+    //     println!("Could not find path in CARGO_MANIFEST_DIR");
+    //     //path::PathBuf::from("./resources")
+    //     path::PathBuf::from("home/james/Dropbox/Arrows/src/View/resources")
+    // };
+
+    let resource_dir = path::PathBuf::from("/home/james/Dropbox/Arrows/src/View/resources");
+
+    let cb = ggez::ContextBuilder::new("drawing", "ggez").add_resource_path(resource_dir);
+
+    let (ctx, events_loop) = &mut cb.build()?;
+
+    println!("{}", graphics::renderer_info(ctx)?);
+    let state = &mut MainState::new(ctx).unwrap();
+    event::run(ctx, events_loop, state)
+}
+
 fn radians(dir: Direction) -> f32 {
     // 90 Deg Rotation
     let turn = 3.14159 / 2.0;
@@ -202,7 +224,7 @@ fn pos_to_screen_coords(
     Some(Point2::new(pos.0 as f32, pos.1 as f32))
 }
 
-struct MainState {
+pub struct MainState {
     logic: Logic,
     assets: Assets,
     display_size: (i32, i32),
@@ -211,7 +233,7 @@ struct MainState {
 
 impl MainState {
     /// Load images and create meshes.
-    fn new(ctx: &mut Context) -> GameResult<MainState> {
+    pub fn new(ctx: &mut Context) -> GameResult<MainState> {
         let mut logic = Logic::new();
         logic.set();
 
@@ -259,22 +281,4 @@ impl event::EventHandler for MainState {
         graphics::present(ctx)?;
         Ok(())
     }
-}
-
-pub fn main() -> GameResult {
-    let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
-        let mut path = path::PathBuf::from(manifest_dir);
-        path.push("resources");
-        path
-    } else {
-        path::PathBuf::from("./resources")
-    };
-
-    let cb = ggez::ContextBuilder::new("drawing", "ggez").add_resource_path(resource_dir);
-
-    let (ctx, events_loop) = &mut cb.build()?;
-
-    println!("{}", graphics::renderer_info(ctx)?);
-    let state = &mut MainState::new(ctx).unwrap();
-    event::run(ctx, events_loop, state)
 }

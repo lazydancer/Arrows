@@ -1,5 +1,5 @@
 [package]
-name = "gg"
+name = "view"
 version = "0.1.0"
 authors = ["lazydancer <jrpucula@gmail.com>"]
 edition = "2018"
