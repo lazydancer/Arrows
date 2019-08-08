@@ -7,8 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-logic = { path = "../Logic" }
-view = { path = "../View"}
+logic = { path = "../logic" }
+view = { path = "../view"}
 
 [lib]
 name = "rust_side"

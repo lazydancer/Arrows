@@ -11,7 +11,7 @@ use ggez::nalgebra as na;
 use ggez::timer;
 use ggez::{Context, GameResult};
 
-use logic::{Block, BlockType, Direction, Logic, Pos};
+use logic::{Block, BlockType, Board, Direction, Pos};
 
 type Point2 = na::Point2<f32>;
 
@@ -28,7 +28,7 @@ pub fn start() -> GameResult {
     //     path::PathBuf::from("home/james/Dropbox/Arrows/src/View/resources")
     // };
 
-    let resource_dir = path::PathBuf::from("/home/james/Dropbox/Arrows/src/View/resources");
+    let resource_dir = path::PathBuf::from("/home/james/Dropbox/Arrows/src/view/resources");
 
     let cb = ggez::ContextBuilder::new("drawing", "ggez").add_resource_path(resource_dir);
 
@@ -225,7 +225,7 @@ fn pos_to_screen_coords(
 }
 
 pub struct MainState {
-    logic: Logic,
+    board: Board,
     assets: Assets,
     display_size: (i32, i32),
     view_top_left: (i32, i32),
@@ -234,8 +234,8 @@ pub struct MainState {
 impl MainState {
     /// Load images and create meshes.
     pub fn new(ctx: &mut Context) -> GameResult<MainState> {
-        let mut logic = Logic::new();
-        logic.set();
+        let mut board = Board::new();
+        board.set_test();
 
         let assets = Assets::new(ctx)?;
 
@@ -244,7 +244,7 @@ impl MainState {
         let view_top_left = (-1, -1);
 
         let s = MainState {
-            logic,
+            board,
             assets,
             display_size,
             view_top_left,
@@ -259,7 +259,7 @@ impl event::EventHandler for MainState {
         const DESIRED_FPS: u32 = 5;
 
         while timer::check_update_time(ctx, DESIRED_FPS) {
-            self.logic.step();
+            self.board.step();
         }
         Ok(())
     }
@@ -269,7 +269,7 @@ impl event::EventHandler for MainState {
 
         let assets = &mut self.assets;
 
-        for (pos, block) in self.logic.get_arrows() {
+        for (pos, block) in self.board.get_arrows() {
             let coord =
                 pos_to_screen_coords(&self.display_size, &self.view_top_left, (pos.x, pos.y));
             if let Some(coord) = coord {

@@ -1,20 +1,9 @@
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum Direction {
-    Up,
-    Right,
-    Down,
-    Left,
-}
+use crate::pos::Direction;
 
-impl Direction {
-    pub fn opposite(dir: Direction) -> Direction {
-        match dir {
-            Direction::Up => Direction::Down,
-            Direction::Down => Direction::Up,
-            Direction::Right => Direction::Left,
-            Direction::Left => Direction::Right,
-        }
-    }
+#[derive(Debug, Copy, Clone, Hash, PartialEq)]
+pub struct Block {
+    pub block_type: BlockType,
+    pub active: bool,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Hash)]
@@ -23,12 +12,6 @@ pub enum BlockType {
     Arrow(Direction),
     NotArrow(Direction),
     Split(Direction),
-}
-
-#[derive(Debug, Copy, Clone, Hash, PartialEq)]
-pub struct Block {
-    pub block_type: BlockType,
-    pub active: bool,
 }
 
 impl Block {

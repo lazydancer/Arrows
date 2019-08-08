@@ -5,4 +5,3 @@ authors = ["lazydancer <jrpucula@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-colored = "*"

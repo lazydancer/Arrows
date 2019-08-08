@@ -1,50 +1,7 @@
 use std::collections::HashMap;
 
-use crate::block::{Block, BlockType, Direction};
-
-#[derive(Debug, Eq, PartialEq, Copy, Clone, Hash, PartialOrd, Ord)]
-pub struct Pos {
-    pub x: i32,
-    pub y: i32,
-}
-
-impl Pos {
-    pub fn neighbour(&self, dir: Direction) -> Self {
-        match dir {
-            Direction::Up => Pos {
-                x: self.x,
-                y: self.y - 1,
-            },
-            Direction::Right => Pos {
-                x: self.x + 1,
-                y: self.y,
-            },
-            Direction::Down => Pos {
-                x: self.x,
-                y: self.y + 1,
-            },
-            Direction::Left => Pos {
-                x: self.x - 1,
-                y: self.y,
-            },
-        }
-    }
-
-    pub fn manhatten_neighbours(&self) -> Vec<Self> {
-        let directions = vec![
-            Direction::Up,
-            Direction::Right,
-            Direction::Down,
-            Direction::Left,
-        ];
-
-        directions
-            .into_iter()
-            .map(|dir| self.neighbour(dir))
-            .collect()
-    }
-
-}
+use crate::block::{Block, BlockType};
+use crate::pos::{Direction, Pos};
 
 #[derive(Debug)]
 pub struct Board {
@@ -72,6 +29,42 @@ impl Board {
         self.modified.extend(loc.manhatten_neighbours());
     }
 
+    /// Temp function to fill in arrows for testing
+    pub fn set_test(&mut self) {
+        self.set(
+            Block::new(BlockType::NotArrow(Direction::Right)),
+            Pos { x: 0, y: 1 },
+        );
+        self.set(
+            Block::new(BlockType::Arrow(Direction::Down)),
+            Pos { x: 1, y: 1 },
+        );
+        self.set(
+            Block::new(BlockType::Arrow(Direction::Down)),
+            Pos { x: 1, y: 2 },
+        );
+        self.set(
+            Block::new(BlockType::Split(Direction::Right)),
+            Pos { x: 1, y: 3 },
+        );
+        self.set(
+            Block::new(BlockType::NotArrow(Direction::Down)),
+            Pos { x: 2, y: 3 },
+        );
+        self.set(
+            Block::new(BlockType::Split(Direction::Up)),
+            Pos { x: 0, y: 3 },
+        );
+        self.set(
+            Block::new(BlockType::Arrow(Direction::Up)),
+            Pos { x: 0, y: 2 },
+        );
+        self.set(
+            Block::new(BlockType::Arrow(Direction::Down)),
+            Pos { x: 0, y: 4 },
+        );
+    }
+
     /// Step the board to the next state
     /// Blocks are calculated on original state
     /// Changes are applied on exit
@@ -83,7 +76,6 @@ impl Board {
         self.modified.dedup();
 
         for modified_pos in &self.modified {
-
             let curr_active = match self.blocks.get(&modified_pos) {
                 Some(block) => block.active,
                 None => continue,
@@ -107,7 +99,10 @@ impl Board {
 
         Board::update_blocks(&mut self.blocks, toggle_staged);
         self.modified = modified_staged;
+    }
 
+    pub fn get_arrows(&self) -> HashMap<Pos, Block> {
+        self.blocks.clone()
     }
 
     fn update_blocks(blocks: &mut HashMap<Pos, Block>, to_toggle: Vec<Pos>) {
@@ -183,7 +178,6 @@ mod tests {
         };
 
         assert_eq!(board.blocks[&Pos { x: 0, y: 2 }], expected_block);
-
     }
 
     #[test]
@@ -197,7 +191,6 @@ mod tests {
             Block::new(BlockType::Arrow(Direction::Left)),
             Pos { x: 0, y: 2 },
         );
-
     }
 
     #[test]
@@ -251,47 +244,6 @@ mod tests {
         board.step();
 
         assert_eq!(board.blocks[&Pos { x: 0, y: 1 }].active, true);
-        // assert_eq!(board.blocks[&Pos { x: 1, y: 1 }].active, false);
-
-        // board.step();
-
-        // assert_eq!(board.blocks[&Pos { x: 0, y: 1 }].active, true);
-        // assert_eq!(board.blocks[&Pos { x: 1, y: 1 }].active, true);
-
-        // board.step();
-
-        // assert_eq!(board.blocks[&Pos { x: 0, y: 1 }].active, true);
-        // assert_eq!(board.blocks[&Pos { x: 1, y: 1 }].active, true);
     }
 
-    // #[test]
-    // fn step_from_remove() {
-    //     // Setup
-    //     let mut board = Board::new();
-    //     board.set(
-    //         Block::new(BlockType::NotArrow(Direction::Right)),
-    //         Pos { x: 0, y: 1 },
-    //     );
-    //     board.set(
-    //         Block::new(BlockType::Arrow(Direction::Right)),
-    //         Pos { x: 1, y: 1 },
-    //     );
-
-    //     board.step();
-    //     board.step();
-
-    //     assert_eq!(board.blocks[&Pos { x: 0, y: 1 }].active, true);
-    //     assert_eq!(board.blocks[&Pos { x: 1, y: 1 }].active, true);
-
-    //     // Action
-    //     board.set(Block::new(BlockType::Empty), Pos { x: 0, y: 1 });
-
-    //     assert_eq!(board.blocks.get(&Pos { x: 0, y: 1 }), None);
-    //     assert_eq!(board.blocks[&Pos { x: 1, y: 1 }].active, true);
-
-    //     board.step();
-
-    //     assert_eq!(board.blocks.get(&Pos { x: 0, y: 1 }), None);
-    //     assert_eq!(board.blocks[&Pos { x: 1, y: 1 }].active, false);
-    // }
 }
