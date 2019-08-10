@@ -1,36 +1,32 @@
-from cffi import FFI
+import python_side.comm as comm
 
-ffi = FFI()
-ffi.cdef("""
-    typedef void* board;
+# This is from draft...
+# there should be a way to keep these both insync
+class Block:
+    wire_left = 0
+    wire_up = 1
+    wire_right = 2
+    wire_down = 3
+    negate_left = 4
+    negate_up = 5
+    negate_right = 6
+    negate_down = 7
+    split_left = 8
+    split_up = 9
+    split_right = 10
+    split_down = 11
+    space = 12
 
-    board board_new();
-    void board_free(board);
 
-    void board_add_block(board, int x, int y, int blocktype);
-    void board_start(board);
-""")
+def send_board(board):
+    adapter_board = comm.Engine_Board()
+    for block in convert_board(board):
+        adapter_board.add_block(*block)
+    adapter_board.start()
 
-C = ffi.dlopen('../rust_side/target/debug/librust_side.so')
-
-class Engine_Board:
-    def __init__(self):
-        self.__obj = C.board_new()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        C.board_free(self.__obj)
-        self.__obj = None
-
-    def add_block(self, x, y, block):
-        C.board_add_block(self.__obj, x, y, block)
-
-    def start(self):
-        C.board_start(self.__obj)
-
-# Reference on how to use
-# with Engine_Board() as board:
-#     board.add_block(4, 3, 2)
-#     board.start()
+def convert_board(board):
+    for y, row in enumerate(board):
+        for i, elem in enumerate(row):
+            if elem == Block.space:
+                continue
+            yield (i, y, elem)

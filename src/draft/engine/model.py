@@ -66,7 +66,7 @@ class Model:
             self._step()
             time.sleep(0.1)
             
-    def _step(self):
+    def _step(self):  
         self._state = solver.solve(self._board, self._state)
         self._event()
 

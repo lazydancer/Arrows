@@ -1,5 +1,6 @@
 use std::env;
 use std::path;
+use std::time::Instant;
 
 use cgmath;
 
@@ -265,6 +266,7 @@ impl event::EventHandler for MainState {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
+        let now = Instant::now();
         graphics::clear(ctx, [0.0, 0.0, 0.0, 1.0].into());
 
         let assets = &mut self.assets;
@@ -279,6 +281,7 @@ impl event::EventHandler for MainState {
 
         // Finished drawing, show it all on the screen!
         graphics::present(ctx)?;
+        println!("{}", now.elapsed().subsec_nanos());
         Ok(())
     }
 }

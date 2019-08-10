@@ -6,6 +6,11 @@ import draft.blueprints.defaults as defaults
 from draft.blueprints.connector import connect
 from draft.blueprints.raster import rasterize
 
+import sys, os
+sys.path.append(os.path.abspath('../../python_side'))
+from python_side import adapter
+
+
 def run():
     model = Model(50)
     controller = Controller(model)
@@ -16,5 +21,7 @@ def run():
 
     model.apply(board, 0, 0)
 
-    model.run()
+    adapter.send_board(model.get_board())
+
+    #model.run()
 

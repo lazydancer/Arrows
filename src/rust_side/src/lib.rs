@@ -15,7 +15,6 @@ pub extern "C" fn board_free(ptr: *mut logic::Board) {
     if ptr.is_null() {
         return;
     }
-    println!("{:?}", ptr);
     unsafe {
         Box::from_raw(ptr);
     }
@@ -32,11 +31,7 @@ pub extern "C" fn board_add_block(board: *mut Board, x: i32, y: i32, block_type:
 
     board.set(block, Pos { x, y });
 
-    println!("{:?}", board.blocks);
-
     Box::into_raw(board); // Don't free the board
-
-    println!("After into raw")
 }
 
 #[no_mangle]

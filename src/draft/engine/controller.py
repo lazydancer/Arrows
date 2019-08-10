@@ -5,7 +5,7 @@ class Controller:
 
     def __init__(self, model):
         self.model = model
-        self.view = TextView(self, model)
+        # self.view = TextView(self, model)
 
     def dispose(self):
         self.view.dispose()
@@ -40,5 +40,5 @@ class Controller:
         self.model.set_block(new_block, x-1, y-1)        
 
     def quit(self):
-        self.view.dispose()
+        # self.view.dispose()
         self.model.quit()
