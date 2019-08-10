@@ -1,5 +1,5 @@
-from simplecircuit.engine.model import Model
-from simplecircuit.engine.controller import Controller
+from draft.engine.model import Model
+from draft.engine.controller import Controller
 
 '''
 def run_test():
@@ -13,7 +13,7 @@ def run_test():
 
     model.run()
 '''
-from simplecircuit.blueprints.blueprint_logic import run
+from draft.blueprints.blueprint_logic import run
 
 def run_test():
     run()

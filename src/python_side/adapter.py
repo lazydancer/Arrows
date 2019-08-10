@@ -13,10 +13,7 @@ ffi.cdef("""
 
 C = ffi.dlopen('../rust_side/target/debug/librust_side.so')
 
-print("From Python:", C.board_new())
-
-
-class Board:
+class Engine_Board:
     def __init__(self):
         self.__obj = C.board_new()
 
@@ -33,6 +30,7 @@ class Board:
     def start(self):
         C.board_start(self.__obj)
 
-with Board() as board:
-    board.add_block(4, 3, 2)
-    board.start()
+# Reference on how to use
+# with Engine_Board() as board:
+#     board.add_block(4, 3, 2)
+#     board.start()

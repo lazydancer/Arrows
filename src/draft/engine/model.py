@@ -1,8 +1,8 @@
 import time
 
-from simplecircuit.common.block import Block
+from draft.common.block import Block
 
-import simplecircuit.engine.solver as solver
+import draft.engine.solver as solver
 
 class Model:
     '''

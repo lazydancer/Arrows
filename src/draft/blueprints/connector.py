@@ -1,4 +1,4 @@
-from simplecircuit.common.block import Block
+from draft.common.block import Block
 
 def connect(a, b, board):
     '''

@@ -1,7 +1,7 @@
 import copy
 
-from simplecircuit.common.block import Block
-from simplecircuit.blueprints.connector import connect
+from draft.common.block import Block
+from draft.blueprints.connector import connect
 
 def rasterize(blueprints, connections, locations):
     '''

@@ -1,7 +1,7 @@
-from simplecircuit.common.block import Block
+from draft.common.block import Block
 
-from simplecircuit.blueprints.blueprint import Blueprint
-from simplecircuit.blueprints.raster import rasterize
+from draft.blueprints.blueprint import Blueprint
+from draft.blueprints.raster import rasterize
 
 def get_input_output():
     return Blueprint([0], [0], [[Block.wire_right]])

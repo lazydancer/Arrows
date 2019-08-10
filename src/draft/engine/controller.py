@@ -1,5 +1,5 @@
-from simplecircuit.engine.view import TextView
-from simplecircuit.common.block import Block, block_groups
+from draft.engine.view import TextView
+from draft.common.block import Block, block_groups
 
 class Controller:
 
