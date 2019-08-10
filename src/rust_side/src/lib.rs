@@ -39,6 +39,18 @@ pub extern "C" fn board_add_block(board: *mut Board, x: i32, y: i32, block_type:
     println!("After into raw")
 }
 
+#[no_mangle]
+pub extern "C" fn board_start(board: *mut Board) {
+    if board.is_null() {
+        return;
+    }
+    let mut board = unsafe { Box::from_raw(board) };
+
+    view::start(*board.clone()); // Cloning on an init, see how it works out
+
+    Box::into_raw(board);
+}
+
 fn python_block_to_rust(x: i32) -> Block {
     match x {
         0 => Block::new(BlockType::Arrow(Direction::Left)),
@@ -57,33 +69,3 @@ fn python_block_to_rust(x: i32) -> Block {
         _ => panic!("{:?} is out of known range", x),
     }
 }
-// #[no_mangle]
-// pub extern "C" fn doubl(x: i32) -> i32 {
-//     x * 2
-// }
-
-// #[no_mangle]
-// pub extern "C" fn start_sim() {
-//     println!("{:?}", "starting sim");
-//     view::start();
-// }
-
-// #[repr(C)]
-// pub struct Pos {
-//     pub x: i32,
-//     pub y: i32,
-// }
-
-// #[no_mangle]
-// pub extern "C" fn length(ptr: *const Pos) -> i32 {
-//     let pos = unsafe {
-//         assert!(!ptr.is_null());
-//         &*ptr
-//     };
-//     4
-// }
-
-// #[no_mangle]
-// pub extern "C" fn add_block(x: i32, y: i32, block_number: i32) {
-//     print("Testing");
-// }

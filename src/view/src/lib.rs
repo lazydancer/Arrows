@@ -17,7 +17,7 @@ type Point2 = na::Point2<f32>;
 
 const ICON_SIZE: i32 = 16;
 
-pub fn start() -> GameResult {
+pub fn start(board: Board) -> GameResult {
     // let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
     //     let mut path = path::PathBuf::from(manifest_dir);
     //     path.push("resources");
@@ -35,7 +35,7 @@ pub fn start() -> GameResult {
     let (ctx, events_loop) = &mut cb.build()?;
 
     println!("{}", graphics::renderer_info(ctx)?);
-    let state = &mut MainState::new(ctx).unwrap();
+    let state = &mut MainState::new(ctx, board).unwrap();
     event::run(ctx, events_loop, state)
 }
 
@@ -233,9 +233,9 @@ pub struct MainState {
 
 impl MainState {
     /// Load images and create meshes.
-    pub fn new(ctx: &mut Context) -> GameResult<MainState> {
-        let mut board = Board::new();
-        board.set_test();
+    pub fn new(ctx: &mut Context, board: Board) -> GameResult<MainState> {
+        //let mut board = Board::new();
+        let mut board = board;
 
         let assets = Assets::new(ctx)?;
 

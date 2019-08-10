@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::block::{Block, BlockType};
 use crate::pos::{Direction, Pos};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Board {
     pub blocks: HashMap<Pos, Block>,
     pub modified: Vec<Pos>,
@@ -27,42 +27,6 @@ impl Board {
 
         self.modified.push(loc);
         self.modified.extend(loc.manhatten_neighbours());
-    }
-
-    /// Temp function to fill in arrows for testing
-    pub fn set_test(&mut self) {
-        self.set(
-            Block::new(BlockType::NotArrow(Direction::Right)),
-            Pos { x: 0, y: 1 },
-        );
-        self.set(
-            Block::new(BlockType::Arrow(Direction::Down)),
-            Pos { x: 1, y: 1 },
-        );
-        self.set(
-            Block::new(BlockType::Arrow(Direction::Down)),
-            Pos { x: 1, y: 2 },
-        );
-        self.set(
-            Block::new(BlockType::Split(Direction::Right)),
-            Pos { x: 1, y: 3 },
-        );
-        self.set(
-            Block::new(BlockType::NotArrow(Direction::Down)),
-            Pos { x: 2, y: 3 },
-        );
-        self.set(
-            Block::new(BlockType::Split(Direction::Up)),
-            Pos { x: 0, y: 3 },
-        );
-        self.set(
-            Block::new(BlockType::Arrow(Direction::Up)),
-            Pos { x: 0, y: 2 },
-        );
-        self.set(
-            Block::new(BlockType::Arrow(Direction::Down)),
-            Pos { x: 0, y: 4 },
-        );
     }
 
     /// Step the board to the next state
