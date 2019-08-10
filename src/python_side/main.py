@@ -2,21 +2,32 @@ from cffi import FFI
 
 ffi = FFI()
 ffi.cdef("""
-    typedef struct {
-        double x, y;
-    } pos_t;
+    typedef void* board;
 
-    int length(const pos_t *pos);
+    board board_new();
+    void board_free(board);
 
-    int doubl(int);
-    void start_sim();
+    void board_add_block(board, int x, int y, int blocktype);
 """)
 
 C = ffi.dlopen('../rust_side/target/debug/librust_side.so')
 
-pos = ffi.new("pos_t *")
-pos.x = 7
-pos.y = 2
+print("From Python:", C.board_new())
 
-print(C.length(pos))
-C.start_sim()
+
+class Board:
+    def __init__(self):
+        self.__obj = C.board_new()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        C.board_free(self.__obj)
+        self.__obj = None
+
+    def add_block(self, x, y, block):
+        C.board_add_block(self.__obj, x, y, block)
+
+with Board() as board:
+    board.add_block(4, 3, 2)
