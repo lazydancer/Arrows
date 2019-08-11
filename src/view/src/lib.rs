@@ -1,6 +1,5 @@
 use std::env;
 use std::path;
-use std::time::Instant;
 
 use ggez;
 use ggez::event;
@@ -16,14 +15,14 @@ type Point2 = na::Point2<f32>;
 const ICON_SIZE: i32 = 16;
 
 pub fn start(board: Board) -> GameResult {
-    let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
-        let mut path = path::PathBuf::from(manifest_dir);
-        path.push("resources");
-        path
-    } else {
-        //path::PathBuf::from("./resources")
-        path::PathBuf::from("home/james/Dropbox/Arrows/src/View/resources")
-    };
+    // let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
+    //     let mut path = path::PathBuf::from(manifest_dir);
+    //     path.push("resources");
+    //     path
+    // } else {
+    //path::PathBuf::from("./resources")
+    let resource_dir = path::PathBuf::from("/home/james/Dropbox/Arrows/src/view/resources");
+    // };
 
     let cb = ggez::ContextBuilder::new("drawing", "ggez").add_resource_path(resource_dir);
 
@@ -165,7 +164,7 @@ impl MainState {
 
 impl event::EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
-        const DESIRED_FPS: u32 = 3;
+        const DESIRED_FPS: u32 = 2;
 
         while timer::check_update_time(ctx, DESIRED_FPS) {
             self.board.step();
@@ -174,7 +173,6 @@ impl event::EventHandler for MainState {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
-        let now = Instant::now();
         graphics::clear(ctx, graphics::BLACK);
 
         let assets = &mut self.assets;
@@ -191,7 +189,6 @@ impl event::EventHandler for MainState {
         assets.spritebatch.clear();
 
         graphics::present(ctx)?;
-        println!("{}", now.elapsed().subsec_nanos());
         Ok(())
     }
 }

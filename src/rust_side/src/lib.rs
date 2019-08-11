@@ -5,7 +5,7 @@ use logic::{Block, BlockType, Board, Direction, Pos};
 
 #[no_mangle]
 pub extern "C" fn board_new() -> *mut logic::Board {
-    let board = Box::new(logic::Board::new());
+    let board = Box::new(logic::Board::default());
     Box::into_raw(board)
 }
 
