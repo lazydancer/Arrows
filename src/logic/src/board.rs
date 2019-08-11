@@ -3,21 +3,13 @@ use std::collections::HashMap;
 use crate::block::{Block, BlockType};
 use crate::pos::{Direction, Pos};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Board {
     pub blocks: HashMap<Pos, Block>,
     pub modified: Vec<Pos>,
 }
 
 impl Board {
-    /// Create a new board full of Empty and empty modified
-    pub fn new() -> Self {
-        let blocks = HashMap::new();
-        let modified = vec![];
-
-        Board { blocks, modified }
-    }
-
     /// Set block to blocks and modified
     pub fn set(&mut self, block: Block, loc: Pos) {
         match block.block_type {

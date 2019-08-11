@@ -5,7 +5,7 @@ pub struct Pos {
 }
 
 impl Pos {
-    pub fn neighbour(&self, dir: Direction) -> Self {
+    pub fn neighbour(self, dir: Direction) -> Self {
         match dir {
             Direction::Up => Pos {
                 x: self.x,
@@ -26,7 +26,7 @@ impl Pos {
         }
     }
 
-    pub fn manhatten_neighbours(&self) -> Vec<Self> {
+    pub fn manhatten_neighbours(self) -> Vec<Self> {
         let directions = vec![
             Direction::Up,
             Direction::Right,
