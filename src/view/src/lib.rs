@@ -40,158 +40,22 @@ pub fn start(board: Board) -> GameResult {
     event::run(ctx, events_loop, state)
 }
 
-fn radians(dir: Direction) -> f32 {
-    // 90 Deg Rotation
-    let turn = 3.14159 / 2.0;
-
-    match dir {
-        Direction::Right => 0.0,
-        Direction::Down => turn * 1.0,
-        Direction::Left => turn * 2.0,
-        Direction::Up => turn * 3.0,
-    }
-}
-
 struct Assets {
     spritebatch: graphics::spritebatch::SpriteBatch,
-
-    arrow_up_active: graphics::Image,
-    arrow_right_active: graphics::Image,
-    arrow_down_active: graphics::Image,
-    arrow_left_active: graphics::Image,
-    arrow_up_inactive: graphics::Image,
-    arrow_right_inactive: graphics::Image,
-    arrow_down_inactive: graphics::Image,
-    arrow_left_inactive: graphics::Image,
-    invert_up_active: graphics::Image,
-    invert_right_active: graphics::Image,
-    invert_down_active: graphics::Image,
-    invert_left_active: graphics::Image,
-    invert_up_inactive: graphics::Image,
-    invert_right_inactive: graphics::Image,
-    invert_down_inactive: graphics::Image,
-    invert_left_inactive: graphics::Image,
-    split_horizontal_active: graphics::Image,
-    split_vertical_active: graphics::Image,
-    split_horizontal_inactive: graphics::Image,
-    split_vertical_inactive: graphics::Image,
 }
 
 impl Assets {
     fn new(ctx: &mut Context) -> GameResult<Assets> {
-        let arrow_up_active = graphics::Image::new(ctx, "/arrow_up_active.png")?;
-        let arrow_right_active = graphics::Image::new(ctx, "/arrow_right_active.png")?;
-        let arrow_down_active = graphics::Image::new(ctx, "/arrow_down_active.png")?;
-        let arrow_left_active = graphics::Image::new(ctx, "/arrow_left_active.png")?;
-
-        let arrow_up_inactive = graphics::Image::new(ctx, "/arrow_up_inactive.png")?;
-        let arrow_right_inactive = graphics::Image::new(ctx, "/arrow_right_inactive.png")?;
-        let arrow_down_inactive = graphics::Image::new(ctx, "/arrow_down_inactive.png")?;
-        let arrow_left_inactive = graphics::Image::new(ctx, "/arrow_left_inactive.png")?;
-
-        let invert_up_active = graphics::Image::new(ctx, "/invert_up_active.png")?;
-        let invert_right_active = graphics::Image::new(ctx, "/invert_right_active.png")?;
-        let invert_down_active = graphics::Image::new(ctx, "/invert_down_active.png")?;
-        let invert_left_active = graphics::Image::new(ctx, "/invert_left_active.png")?;
-
-        let invert_up_inactive = graphics::Image::new(ctx, "/invert_up_inactive.png")?;
-        let invert_down_inactive = graphics::Image::new(ctx, "/invert_down_inactive.png")?;
-        let invert_right_inactive = graphics::Image::new(ctx, "/invert_right_inactive.png")?;
-        let invert_left_inactive = graphics::Image::new(ctx, "/invert_left_inactive.png")?;
-
-        let split_horizontal_active = graphics::Image::new(ctx, "/split_horizontal_active.png")?;
-        let split_vertical_active = graphics::Image::new(ctx, "/split_vertical_active.png")?;
-
-        let split_horizontal_inactive =
-            graphics::Image::new(ctx, "/split_horizontal_inactive.png")?;
-        let split_vertical_inactive = graphics::Image::new(ctx, "/split_vertical_inactive.png")?;
-
         let image = graphics::Image::new(ctx, "/spritesheet.png")?;
         let spritebatch = graphics::spritebatch::SpriteBatch::new(image);
 
-        Ok(Assets {
-            spritebatch,
-            arrow_up_active,
-            arrow_right_active,
-            arrow_down_active,
-            arrow_left_active,
-            arrow_up_inactive,
-            arrow_right_inactive,
-            arrow_down_inactive,
-            arrow_left_inactive,
-            invert_up_active,
-            invert_right_active,
-            invert_down_active,
-            invert_left_active,
-            invert_up_inactive,
-            invert_right_inactive,
-            invert_down_inactive,
-            invert_left_inactive,
-            split_horizontal_active,
-            split_vertical_active,
-            split_horizontal_inactive,
-            split_vertical_inactive,
-        })
+        Ok(Assets { spritebatch })
     }
 
-    fn image(&mut self, block: &Block) -> &mut graphics::Image {
-        match block.block_type {
-            BlockType::Arrow(dir) => {
-                if block.active {
-                    match dir {
-                        Direction::Up => &mut self.arrow_up_active,
-                        Direction::Right => &mut self.arrow_right_active,
-                        Direction::Down => &mut self.arrow_down_active,
-                        Direction::Left => &mut self.arrow_left_active,
-                    }
-                } else {
-                    match dir {
-                        Direction::Up => &mut self.arrow_up_inactive,
-                        Direction::Right => &mut self.arrow_right_inactive,
-                        Direction::Down => &mut self.arrow_down_inactive,
-                        Direction::Left => &mut self.arrow_left_inactive,
-                    }
-                }
-            }
-
-            BlockType::NotArrow(dir) => {
-                if block.active {
-                    match dir {
-                        Direction::Up => &mut self.invert_up_active,
-                        Direction::Right => &mut self.invert_right_active,
-                        Direction::Down => &mut self.invert_down_active,
-                        Direction::Left => &mut self.invert_left_active,
-                    }
-                } else {
-                    match dir {
-                        Direction::Up => &mut self.invert_up_inactive,
-                        Direction::Right => &mut self.invert_right_inactive,
-                        Direction::Down => &mut self.invert_down_inactive,
-                        Direction::Left => &mut self.invert_left_inactive,
-                    }
-                }
-            }
-
-            BlockType::Split(dir) => {
-                if block.active {
-                    match dir {
-                        Direction::Up => &mut self.split_vertical_active,
-                        Direction::Right => &mut self.split_horizontal_active,
-                        Direction::Down => &mut self.split_vertical_active,
-                        Direction::Left => &mut self.split_horizontal_active,
-                    }
-                } else {
-                    match dir {
-                        Direction::Up => &mut self.split_vertical_inactive,
-                        Direction::Right => &mut self.split_horizontal_inactive,
-                        Direction::Down => &mut self.split_vertical_inactive,
-                        Direction::Left => &mut self.split_horizontal_inactive,
-                    }
-                }
-            }
-
-            BlockType::Empty => &mut self.split_vertical_active,
-        }
+    fn draw_block(&mut self, block: &Block, coord: Point2) {
+        let image_rect = self.spritesheet_loc(&block);
+        let drawparams = graphics::DrawParam::new().src(image_rect).dest(coord);
+        self.spritebatch.add(drawparams);
     }
 
     fn spritesheet_loc(&self, block: &Block) -> graphics::Rect {
@@ -242,10 +106,10 @@ impl Assets {
                     }
                 } else {
                     match dir {
-                        Direction::Up => (0.75, 0.0),
-                        Direction::Right => (0.5, 0.0),
-                        Direction::Down => (0.75, 0.0),
-                        Direction::Left => (0.5, 0.0),
+                        Direction::Up => (0.75, 0.80),
+                        Direction::Right => (0.5, 0.80),
+                        Direction::Down => (0.75, 0.80),
+                        Direction::Left => (0.5, 0.80),
                     }
                 }
             }
@@ -255,20 +119,6 @@ impl Assets {
 
         graphics::Rect::new(x, y, 0.25, 0.20)
     }
-}
-
-fn draw_arrow(
-    assets: &mut Assets,
-    ctx: &mut Context,
-    arrow_coords: Point2,
-    arrow: Block,
-) -> GameResult {
-    let image = assets.image(&arrow);
-
-    let drawparams = graphics::DrawParam::new()
-        .dest(arrow_coords)
-        .offset(Point2::new(0.5, 0.5));
-    graphics::draw(ctx, image, drawparams)
 }
 
 fn pos_to_screen(
@@ -325,7 +175,7 @@ impl MainState {
 
 impl event::EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
-        const DESIRED_FPS: u32 = 5;
+        const DESIRED_FPS: u32 = 3;
 
         while timer::check_update_time(ctx, DESIRED_FPS) {
             self.board.step();
@@ -342,17 +192,14 @@ impl event::EventHandler for MainState {
         for (pos, block) in self.board.get_arrows() {
             let coord = pos_to_screen(&self.display_size, &self.view_top_left, (pos.x, pos.y));
             if let Some(coord) = coord {
-                let image_rect = assets.spritesheet_loc(&block);
-                let drawparams = graphics::DrawParam::new().src(image_rect).dest(coord);
-                assets.spritebatch.add(drawparams);
-                //draw_arrow(assets, ctx, coord, block);
+                assets.draw_block(&block, coord);
             }
         }
 
         let parm = graphics::DrawParam::new().dest(Point2::new(0.0, 0.0));
         graphics::draw(ctx, &assets.spritebatch, parm)?;
+        assets.spritebatch.clear();
 
-        // Finished drawing, show it all on the screen!
         graphics::present(ctx)?;
         println!("{}", now.elapsed().subsec_nanos());
         Ok(())

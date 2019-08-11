@@ -12,7 +12,7 @@ ffi.cdef("""
     void board_start(board);
 """)
 
-dl_path = path.join(path.dirname(__file__), '../rust_side/target/debug/librust_side.so')
+dl_path = path.join(path.dirname(__file__), '../rust_side/target/release/librust_side.so')
 C = ffi.dlopen(dl_path)
 
 class Engine_Board:
