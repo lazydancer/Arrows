@@ -160,3 +160,6 @@ def get_four_adder():
     board = rasterize(blueprints, connections, locations)
 
     return Blueprint([], [], board) #TODO finish finding input and outputs
+
+def get_rs_latch():
+    connections = []

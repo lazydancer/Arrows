@@ -2,7 +2,8 @@ use std::env;
 use std::path;
 
 use ggez;
-use ggez::event;
+use ggez::conf;
+use ggez::event::{self, EventHandler, KeyCode, KeyMods};
 use ggez::graphics;
 use ggez::nalgebra as na;
 use ggez::timer;
@@ -13,25 +14,6 @@ use logic::{Block, BlockType, Board, Direction};
 type Point2 = na::Point2<f32>;
 
 const ICON_SIZE: i32 = 16;
-
-pub fn start(board: Board) -> GameResult {
-    // let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
-    //     let mut path = path::PathBuf::from(manifest_dir);
-    //     path.push("resources");
-    //     path
-    // } else {
-    //path::PathBuf::from("./resources")
-    let resource_dir = path::PathBuf::from("/home/james/Dropbox/Arrows/src/view/resources");
-    // };
-
-    let cb = ggez::ContextBuilder::new("drawing", "ggez").add_resource_path(resource_dir);
-
-    let (ctx, events_loop) = &mut cb.build()?;
-
-    println!("{}", graphics::renderer_info(ctx)?);
-    let state = &mut MainState::new(ctx, board).unwrap();
-    event::run(ctx, events_loop, state)
-}
 
 struct Assets {
     spritebatch: graphics::spritebatch::SpriteBatch,
@@ -191,4 +173,51 @@ impl event::EventHandler for MainState {
         graphics::present(ctx)?;
         Ok(())
     }
+
+    fn key_down_event(
+        &mut self,
+        ctx: &mut Context,
+        keycode: KeyCode,
+        _keymod: KeyMods,
+        _repeat: bool,
+    ) {
+        match keycode {
+            KeyCode::W => {
+                self.view_top_left.1 = self.view_top_left.1 - 1;
+            }
+            KeyCode::A => {
+                self.view_top_left.0 = self.view_top_left.0 - 1;
+            }
+            KeyCode::S => {
+                self.view_top_left.1 = self.view_top_left.1 + 1;
+            }
+            KeyCode::D => {
+                self.view_top_left.0 = self.view_top_left.0 + 1;
+            }
+            KeyCode::Escape => event::quit(ctx),
+            _ => (),
+        }
+    }
+}
+
+pub fn start(board: Board) -> GameResult {
+    // let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
+    //     let mut path = path::PathBuf::from(manifest_dir);
+    //     path.push("resources");
+    //     path
+    // } else {
+    //path::PathBuf::from("./resources")
+    let resource_dir = path::PathBuf::from("/home/james/Dropbox/Arrows/src/view/resources");
+    // };
+
+    let cb = ggez::ContextBuilder::new("drawing", "ggez")
+        .window_setup(conf::WindowSetup::default().title("Arrows!"))
+        .window_mode(conf::WindowMode::default().min_dimensions(640.0, 480.0))
+        .add_resource_path(resource_dir);
+
+    let (ctx, events_loop) = &mut cb.build()?;
+
+    println!("{}", graphics::renderer_info(ctx)?);
+    let state = &mut MainState::new(ctx, board).unwrap();
+    event::run(ctx, events_loop, state)
 }
