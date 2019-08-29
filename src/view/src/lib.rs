@@ -4,7 +4,7 @@ use std::path;
 use ggez;
 use ggez::conf;
 use ggez::event::{self, EventHandler, KeyCode, KeyMods};
-use ggez::graphics;
+use ggez::graphics::{self, DrawParam};
 use ggez::nalgebra as na;
 use ggez::timer;
 use ggez::{Context, GameResult};
@@ -14,6 +14,8 @@ use logic::{Block, BlockType, Board, Direction};
 type Point2 = na::Point2<f32>;
 
 const ICON_SIZE: i32 = 16;
+const WINDOW_WIDTH: f32 = 640.0;
+const WINDOW_HEIGHT: f32 = 480.0;
 
 struct Assets {
     spritebatch: graphics::spritebatch::SpriteBatch,
@@ -32,6 +34,8 @@ impl Assets {
         let drawparams = graphics::DrawParam::new().src(image_rect).dest(coord);
         self.spritebatch.add(drawparams);
     }
+
+    fn draw_toolbelt(&mut self) {}
 
     fn spritesheet_loc(block: Block) -> graphics::Rect {
         let (x, y) = match block.block_type {
@@ -170,6 +174,11 @@ impl event::EventHandler for MainState {
         graphics::draw(ctx, &assets.spritebatch, parm)?;
         assets.spritebatch.clear();
 
+        let rect = graphics::Rect::new(370.0, 566.0, 56.0, 20.0);
+        let r1 =
+            graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect, graphics::WHITE)?;
+        graphics::draw(ctx, &r1, DrawParam::default())?;
+
         graphics::present(ctx)?;
         Ok(())
     }
@@ -201,18 +210,11 @@ impl event::EventHandler for MainState {
 }
 
 pub fn start(board: Board) -> GameResult {
-    // let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
-    //     let mut path = path::PathBuf::from(manifest_dir);
-    //     path.push("resources");
-    //     path
-    // } else {
-    //path::PathBuf::from("./resources")
     let resource_dir = path::PathBuf::from("/home/james/Dropbox/Arrows/src/view/resources");
-    // };
 
     let cb = ggez::ContextBuilder::new("drawing", "ggez")
         .window_setup(conf::WindowSetup::default().title("Arrows!"))
-        .window_mode(conf::WindowMode::default().min_dimensions(640.0, 480.0))
+        .window_mode(conf::WindowMode::default().min_dimensions(WINDOW_WIDTH, WINDOW_HEIGHT))
         .add_resource_path(resource_dir);
 
     let (ctx, events_loop) = &mut cb.build()?;
