@@ -179,6 +179,24 @@ impl event::EventHandler for MainState {
             graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect, graphics::WHITE)?;
         graphics::draw(ctx, &r1, DrawParam::default())?;
 
+        let assets = &mut self.assets;
+        assets.draw_block(
+            Block::new(BlockType::Arrow(Direction::Right)),
+            Point2::new(372.0, 568.0),
+        );
+        assets.draw_block(
+            Block::new(BlockType::NotArrow(Direction::Right)),
+            Point2::new(390.0, 568.0),
+        );
+        assets.draw_block(
+            Block::new(BlockType::Split(Direction::Up)),
+            Point2::new(408.0, 568.0),
+        );
+
+        let parm = graphics::DrawParam::new().dest(Point2::new(0.0, 0.0));
+        graphics::draw(ctx, &assets.spritebatch, parm)?;
+        assets.spritebatch.clear();
+
         graphics::present(ctx)?;
         Ok(())
     }
