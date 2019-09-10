@@ -1,6 +1,33 @@
+import copy
+from random import shuffle
+
 from draft.common.block import Block
 
-def connect(a, b, board):
+def connect(board, connections):
+
+    temp_board = copy.copy(board)
+
+    for tries in range(100):
+        shuffle(connections) # in-place shuffle
+        result = _connections_try(temp_board, connections)
+        if result != None:
+            return result
+        print('Trying to find another path: try', tries)
+
+
+    print('Could not find a solution stopped after 100 tries')
+
+def _connections_try(board, connections):
+    for a, b in connections:
+        path = _connect_path(a, b, board)
+        if path == None:
+            return None
+        board = _apply(path, 0, 0, board)
+
+    return board
+
+
+def _connect_path(a, b, board):
     '''
     Joins two location together going from 'a' to 'b' on the 'board'
     '''
@@ -13,6 +40,9 @@ def connect(a, b, board):
 
     # Start a breath first search, finding the shortest path
     path = _breath_search(a, b, wall_board)
+
+    if path == None:
+        return None
 
     # Return a empty board with just the path
     result_board = [[None for elem in row] for row in board]
@@ -54,6 +84,18 @@ def _breath_search(a, b, board):
 
             visited.append(neighbour)
             queue.append((neighbour, path + [neighbour])) 
+
+    return None
+
+def _apply(block, at_x, at_y, prev_result):
+    result = copy.deepcopy(prev_result)
+
+    for j, y in enumerate(range(at_y, at_y + len(block))):
+        for i, x in enumerate(range(at_x, at_x + len(block[0]))):
+            if block[j][i] is None or block[j][i] == Block.space:
+                continue
+            result[y][x] = block[j][i]
+    return result
 
 # def test_connect():
 #     board = [[Block.wire_right, Block.space, Block.space], 

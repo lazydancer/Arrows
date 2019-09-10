@@ -15,7 +15,7 @@ def rasterize(blueprints, connections, locations):
     board = _blueprints(board, blueprints, locations)
 
     connection_spots = _connection_spots(connections, blueprints, locations)
-    board = _connections(board, connection_spots)
+    board = connect(board, list(connection_spots))
 
     board = _trim_board(board)
 
@@ -43,14 +43,7 @@ def _connection_spots(connections, blueprints, locations):
         a = (a_loc[0] + a_bp.outputs[a_idx], a_loc[1] +  a_width)
         b = (b_loc[0] + b_bp.inputs[b_idx], b_loc[1])
 
-        yield (a, b)
-
-def _connections(board, connections):
-    for a, b in connections:
-        path = connect(a, b, board)
-        board = _apply(path, 0, 0, board)
-
-    return board
+        yield [a, b]
 
 def _trim_board(board):
     # Rows: start at the bottom and work till a not space is seen

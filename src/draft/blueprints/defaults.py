@@ -72,7 +72,7 @@ def get_cross():
 
     board = rasterize(blueprints, connections, locations)
 
-    return Blueprint([5, 8], [4, 9], board)
+    return Blueprint([4, 8], [4, 9], board)
 
 def get_half_adder():
     connections = []
