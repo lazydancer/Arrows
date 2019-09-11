@@ -39,9 +39,9 @@ pub extern "C" fn board_start(board: *mut Board) {
     if board.is_null() {
         return;
     }
-    let mut board = unsafe { Box::from_raw(board) };
+    let board = unsafe { Box::from_raw(board) };
 
-    view::start(*board.clone()); // Cloning on an init, see how it works out
+    view::start(*board.clone()).expect("could not start viewer");; // Cloning on an init, see how it works out
 
     Box::into_raw(board);
 }

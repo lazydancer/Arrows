@@ -1,158 +1,34 @@
-use std::env;
 use std::path;
 
 use ggez;
 use ggez::conf;
-use ggez::event::{self, EventHandler, KeyCode, KeyMods};
-use ggez::graphics::{self, Color, DrawParam};
-use ggez::nalgebra as na;
+use ggez::event::{self, KeyCode, KeyMods, MouseButton};
+use ggez::graphics;
 use ggez::timer;
 use ggez::{Context, GameResult};
 
-use logic::{Block, BlockType, Board, Direction};
+use logic::Board;
 
-type Point2 = na::Point2<f32>;
+mod assets;
+use crate::assets::{Assets, Point2};
 
-const ICON_SIZE: i32 = 16;
 const WINDOW_WIDTH: f32 = 640.0;
 const WINDOW_HEIGHT: f32 = 480.0;
+const ICON_SIZE: i32 = 16;
 
-struct Assets {
-    spritebatch: graphics::spritebatch::SpriteBatch,
-}
+pub fn start(board: Board) -> GameResult {
+    let resource_dir = path::PathBuf::from("/home/james/Dropbox/Arrows/src/view/resources");
 
-impl Assets {
-    fn new(ctx: &mut Context) -> GameResult<Assets> {
-        let image = graphics::Image::new(ctx, "/spritesheet.png")?;
-        let spritebatch = graphics::spritebatch::SpriteBatch::new(image);
+    let cb = ggez::ContextBuilder::new("drawing", "ggez")
+        .window_setup(conf::WindowSetup::default().title("Arrows!"))
+        .window_mode(conf::WindowMode::default().min_dimensions(WINDOW_WIDTH, WINDOW_HEIGHT))
+        .add_resource_path(resource_dir);
 
-        Ok(Assets { spritebatch })
-    }
+    let (ctx, events_loop) = &mut cb.build()?;
 
-    fn draw_block(&mut self, block: Block, coord: Point2) {
-        let image_rect = Self::spritesheet_loc(block);
-        let drawparams = graphics::DrawParam::new().src(image_rect).dest(coord);
-        self.spritebatch.add(drawparams);
-    }
-
-    fn draw_toolbelt(&mut self, ctx: &mut Context) -> GameResult {
-        let rect = graphics::Rect::new(370.0, 566.0, 56.0, 20.0);
-        let r1 = graphics::Mesh::new_rectangle(
-            ctx,
-            graphics::DrawMode::fill(),
-            rect,
-            Color {
-                r: 0.1,
-                g: 0.1,
-                b: 0.1,
-                a: 1.0,
-            },
-        )?;
-        graphics::draw(ctx, &r1, DrawParam::default())?;
-
-        self.draw_block(
-            Block::new(BlockType::Arrow(Direction::Right)),
-            Point2::new(372.0, 568.0),
-        );
-        self.draw_block(
-            Block::new(BlockType::NotArrow(Direction::Right)),
-            Point2::new(390.0, 568.0),
-        );
-        self.draw_block(
-            Block::new(BlockType::Split(Direction::Up)),
-            Point2::new(408.0, 568.0),
-        );
-
-        let parm = graphics::DrawParam::new().dest(Point2::new(0.0, 0.0));
-        graphics::draw(ctx, &self.spritebatch, parm)?;
-        self.spritebatch.clear();
-
-        Ok(())
-    }
-
-    fn spritesheet_loc(block: Block) -> graphics::Rect {
-        let (x, y) = match block.block_type {
-            BlockType::Arrow(dir) => {
-                if block.active {
-                    match dir {
-                        Direction::Up => (0.0, 0.0),
-                        Direction::Right => (0.25, 0.0),
-                        Direction::Down => (0.50, 0.0),
-                        Direction::Left => (0.75, 0.0),
-                    }
-                } else {
-                    match dir {
-                        Direction::Up => (0.0, 0.20),
-                        Direction::Right => (0.25, 0.20),
-                        Direction::Down => (0.50, 0.20),
-                        Direction::Left => (0.75, 0.20),
-                    }
-                }
-            }
-
-            BlockType::NotArrow(dir) => {
-                if block.active {
-                    match dir {
-                        Direction::Up => (0.0, 0.40),
-                        Direction::Right => (0.25, 0.40),
-                        Direction::Down => (0.50, 0.40),
-                        Direction::Left => (0.75, 0.40),
-                    }
-                } else {
-                    match dir {
-                        Direction::Up => (0.0, 0.60),
-                        Direction::Right => (0.25, 0.60),
-                        Direction::Down => (0.50, 0.60),
-                        Direction::Left => (0.75, 0.60),
-                    }
-                }
-            }
-
-            BlockType::Split(dir) => {
-                if block.active {
-                    match dir {
-                        Direction::Up => (0.25, 0.80),
-                        Direction::Right => (0.0, 0.80),
-                        Direction::Down => (0.25, 0.80),
-                        Direction::Left => (0.0, 0.80),
-                    }
-                } else {
-                    match dir {
-                        Direction::Up => (0.75, 0.80),
-                        Direction::Right => (0.5, 0.80),
-                        Direction::Down => (0.75, 0.80),
-                        Direction::Left => (0.5, 0.80),
-                    }
-                }
-            }
-
-            BlockType::Empty => (0.0, 0.0),
-        };
-
-        graphics::Rect::new(x, y, 0.25, 0.20)
-    }
-}
-
-fn pos_to_screen(
-    window_size: (i32, i32),
-    view_top_left: (i32, i32),
-    pos: (i32, i32),
-) -> Option<Point2> {
-    // First translate in-game view, make view top left to 0,0
-    let pos = (pos.0 - view_top_left.0, pos.1 - view_top_left.1);
-
-    // Then 'grow' in-game position to window size
-    let pos = (pos.0 * ICON_SIZE, pos.1 * ICON_SIZE);
-
-    if pos.0 + ICON_SIZE > window_size.0 {
-        return None;
-    }
-
-    if pos.1 + ICON_SIZE > window_size.1 {
-        return None;
-    }
-
-    Some(Point2::new(pos.0 as f32, pos.1 as f32))
+    println!("{}", graphics::renderer_info(ctx)?);
+    let state = &mut MainState::new(ctx, board).unwrap();
+    event::run(ctx, events_loop, state)
 }
 
 pub struct MainState {
@@ -207,38 +83,7 @@ impl event::EventHandler for MainState {
         graphics::draw(ctx, &assets.spritebatch, parm)?;
         assets.spritebatch.clear();
 
-        assets.draw_toolbelt(ctx);
-        // let rect = graphics::Rect::new(370.0, 566.0, 56.0, 20.0);
-        // let r1 = graphics::Mesh::new_rectangle(
-        //     ctx,
-        //     graphics::DrawMode::fill(),
-        //     rect,
-        //     Color {
-        //         r: 0.1,
-        //         g: 0.1,
-        //         b: 0.1,
-        //         a: 1.0,
-        //     },
-        // )?;
-        // graphics::draw(ctx, &r1, DrawParam::default())?;
-
-        // let assets = &mut self.assets;
-        // assets.draw_block(
-        //     Block::new(BlockType::Arrow(Direction::Right)),
-        //     Point2::new(372.0, 568.0),
-        // );
-        // assets.draw_block(
-        //     Block::new(BlockType::NotArrow(Direction::Right)),
-        //     Point2::new(390.0, 568.0),
-        // );
-        // assets.draw_block(
-        //     Block::new(BlockType::Split(Direction::Up)),
-        //     Point2::new(408.0, 568.0),
-        // );
-
-        // let parm = graphics::DrawParam::new().dest(Point2::new(0.0, 0.0));
-        // graphics::draw(ctx, &assets.spritebatch, parm)?;
-        // assets.spritebatch.clear();
+        assets.draw_toolbelt(ctx)?;
 
         graphics::present(ctx)?;
         Ok(())
@@ -253,34 +98,51 @@ impl event::EventHandler for MainState {
     ) {
         match keycode {
             KeyCode::W => {
-                self.view_top_left.1 = self.view_top_left.1 - 1;
+                self.view_top_left.1 -= 1;
             }
             KeyCode::A => {
-                self.view_top_left.0 = self.view_top_left.0 - 1;
+                self.view_top_left.0 -= 1;
             }
             KeyCode::S => {
-                self.view_top_left.1 = self.view_top_left.1 + 1;
+                self.view_top_left.1 += 1;
             }
             KeyCode::D => {
-                self.view_top_left.0 = self.view_top_left.0 + 1;
+                self.view_top_left.0 += 1;
             }
             KeyCode::Escape => event::quit(ctx),
             _ => (),
         }
     }
+
+    fn mouse_button_down_event(
+        &mut self,
+        _ctx: &mut Context,
+        _button: MouseButton,
+        x: f32,
+        y: f32,
+    ) {
+        println!("{:?} and {:?}", x, y);
+    }
 }
 
-pub fn start(board: Board) -> GameResult {
-    let resource_dir = path::PathBuf::from("/home/james/Dropbox/Arrows/src/view/resources");
+fn pos_to_screen(
+    window_size: (i32, i32),
+    view_top_left: (i32, i32),
+    pos: (i32, i32),
+) -> Option<Point2> {
+    // First translate in-game view, make view top left to 0,0
+    let pos = (pos.0 - view_top_left.0, pos.1 - view_top_left.1);
 
-    let cb = ggez::ContextBuilder::new("drawing", "ggez")
-        .window_setup(conf::WindowSetup::default().title("Arrows!"))
-        .window_mode(conf::WindowMode::default().min_dimensions(WINDOW_WIDTH, WINDOW_HEIGHT))
-        .add_resource_path(resource_dir);
+    // Then 'grow' in-game position to window size
+    let pos = (pos.0 * ICON_SIZE, pos.1 * ICON_SIZE);
 
-    let (ctx, events_loop) = &mut cb.build()?;
+    if pos.0 + ICON_SIZE > window_size.0 {
+        return None;
+    }
 
-    println!("{}", graphics::renderer_info(ctx)?);
-    let state = &mut MainState::new(ctx, board).unwrap();
-    event::run(ctx, events_loop, state)
+    if pos.1 + ICON_SIZE > window_size.1 {
+        return None;
+    }
+
+    Some(Point2::new(pos.0 as f32, pos.1 as f32))
 }
