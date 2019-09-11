@@ -59,7 +59,9 @@ def test_adj_levels_raster():
     connections = [[(A, 0), (D, 0)], 
                    [(A, 1), (B, 0)],
                    [(A2, 0), (B, 1)],
-                   [(A2, 1), (E, 1)]
+                   [(A2, 1), (E, 1)],
+                   [(B, 0), (D, 1)],
+                   [(B, 1), (E, 0)],
                 ]
 
     return adj_levels_raster(blueprint_levels, connections)

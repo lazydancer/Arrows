@@ -4,7 +4,7 @@ use std::path;
 use ggez;
 use ggez::conf;
 use ggez::event::{self, EventHandler, KeyCode, KeyMods};
-use ggez::graphics::{self, DrawParam};
+use ggez::graphics::{self, Color, DrawParam};
 use ggez::nalgebra as na;
 use ggez::timer;
 use ggez::{Context, GameResult};
@@ -35,7 +35,40 @@ impl Assets {
         self.spritebatch.add(drawparams);
     }
 
-    fn draw_toolbelt(&mut self) {}
+    fn draw_toolbelt(&mut self, ctx: &mut Context) -> GameResult {
+        let rect = graphics::Rect::new(370.0, 566.0, 56.0, 20.0);
+        let r1 = graphics::Mesh::new_rectangle(
+            ctx,
+            graphics::DrawMode::fill(),
+            rect,
+            Color {
+                r: 0.1,
+                g: 0.1,
+                b: 0.1,
+                a: 1.0,
+            },
+        )?;
+        graphics::draw(ctx, &r1, DrawParam::default())?;
+
+        self.draw_block(
+            Block::new(BlockType::Arrow(Direction::Right)),
+            Point2::new(372.0, 568.0),
+        );
+        self.draw_block(
+            Block::new(BlockType::NotArrow(Direction::Right)),
+            Point2::new(390.0, 568.0),
+        );
+        self.draw_block(
+            Block::new(BlockType::Split(Direction::Up)),
+            Point2::new(408.0, 568.0),
+        );
+
+        let parm = graphics::DrawParam::new().dest(Point2::new(0.0, 0.0));
+        graphics::draw(ctx, &self.spritebatch, parm)?;
+        self.spritebatch.clear();
+
+        Ok(())
+    }
 
     fn spritesheet_loc(block: Block) -> graphics::Rect {
         let (x, y) = match block.block_type {
@@ -174,28 +207,38 @@ impl event::EventHandler for MainState {
         graphics::draw(ctx, &assets.spritebatch, parm)?;
         assets.spritebatch.clear();
 
-        let rect = graphics::Rect::new(370.0, 566.0, 56.0, 20.0);
-        let r1 =
-            graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect, graphics::WHITE)?;
-        graphics::draw(ctx, &r1, DrawParam::default())?;
+        assets.draw_toolbelt(ctx);
+        // let rect = graphics::Rect::new(370.0, 566.0, 56.0, 20.0);
+        // let r1 = graphics::Mesh::new_rectangle(
+        //     ctx,
+        //     graphics::DrawMode::fill(),
+        //     rect,
+        //     Color {
+        //         r: 0.1,
+        //         g: 0.1,
+        //         b: 0.1,
+        //         a: 1.0,
+        //     },
+        // )?;
+        // graphics::draw(ctx, &r1, DrawParam::default())?;
 
-        let assets = &mut self.assets;
-        assets.draw_block(
-            Block::new(BlockType::Arrow(Direction::Right)),
-            Point2::new(372.0, 568.0),
-        );
-        assets.draw_block(
-            Block::new(BlockType::NotArrow(Direction::Right)),
-            Point2::new(390.0, 568.0),
-        );
-        assets.draw_block(
-            Block::new(BlockType::Split(Direction::Up)),
-            Point2::new(408.0, 568.0),
-        );
+        // let assets = &mut self.assets;
+        // assets.draw_block(
+        //     Block::new(BlockType::Arrow(Direction::Right)),
+        //     Point2::new(372.0, 568.0),
+        // );
+        // assets.draw_block(
+        //     Block::new(BlockType::NotArrow(Direction::Right)),
+        //     Point2::new(390.0, 568.0),
+        // );
+        // assets.draw_block(
+        //     Block::new(BlockType::Split(Direction::Up)),
+        //     Point2::new(408.0, 568.0),
+        // );
 
-        let parm = graphics::DrawParam::new().dest(Point2::new(0.0, 0.0));
-        graphics::draw(ctx, &assets.spritebatch, parm)?;
-        assets.spritebatch.clear();
+        // let parm = graphics::DrawParam::new().dest(Point2::new(0.0, 0.0));
+        // graphics::draw(ctx, &assets.spritebatch, parm)?;
+        // assets.spritebatch.clear();
 
         graphics::present(ctx)?;
         Ok(())
