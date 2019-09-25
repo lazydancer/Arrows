@@ -1,4 +1,4 @@
-import python_side.comm as comm
+import bridge_python_side.comm as comm
 
 # This is from draft...
 # there should be a way to keep these both insync

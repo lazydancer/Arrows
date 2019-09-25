@@ -7,8 +7,8 @@ from draft.blueprints.connector import connect
 from draft.blueprints.raster import rasterize
 
 import sys, os
-sys.path.append(os.path.abspath('../../python_side'))
-from python_side import adapter
+sys.path.append(os.path.abspath('../../bridge_python_side'))
+from bridge_python_side import adapter
 
 
 from draft.blueprints.adj_level_raster import test_adj_levels_raster
