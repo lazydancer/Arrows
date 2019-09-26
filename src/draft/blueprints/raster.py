@@ -1,6 +1,6 @@
 import copy
 
-from draft.common.block import Block
+from draft.model.block import Block
 from draft.blueprints.connector import connect
 
 def rasterize(blueprints, connections, locations):
@@ -8,7 +8,7 @@ def rasterize(blueprints, connections, locations):
     Changes the blueprints to arrows
     TODO: remove the need for locations, to be discovered internally
     '''
-    SIZE = (50, 50)
+    SIZE = (100, 100)
 
     board = _init_board(SIZE)
 

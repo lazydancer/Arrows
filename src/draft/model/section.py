@@ -1,10 +1,10 @@
-#from simplecircuit.common.block import Block
-
-class Blueprint:
+class Section:
     def __init__(self, inputs, outputs, data):
         self.inputs = inputs
         self.outputs = outputs
         self.data = data
+        self.sections = []
+        self.connections = []
 
     def input(self, input_num):
         return (self, input_num)

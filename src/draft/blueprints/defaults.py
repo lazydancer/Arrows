@@ -1,27 +1,27 @@
-from draft.common.block import Block
+from draft.model.block import Block
+from draft.model.section import Section
 
-from draft.blueprints.blueprint import Blueprint
 from draft.blueprints.raster import rasterize
 
 def get_input_output():
-    return Blueprint([0], [0], [[Block.wire_right]])
+    return Section([0], [0], [[Block.wire_right]])
 
 def get_and():
-    return Blueprint([0, 2], [1], [
+    return Section([0, 2], [1], [
         [Block.wire_right, Block.negate_down , Block.space],
         [Block.space, Block.negate_right, Block.wire_right],
         [Block.wire_right , Block.negate_up, Block.space],
     ])
 
 def get_or():
-    return Blueprint([0, 2], [1], [
+    return Section([0, 2], [1], [
         [Block.wire_right , Block.wire_down, Block.space],
         [Block.space, Block.wire_right , Block.wire_right ],
         [Block.wire_right , Block.wire_up, Block.space],
     ])
 
 def get_xor():
-    return Blueprint([1, 3], [2], [
+    return Section([1, 3], [2], [
         [Block.space, Block.wire_right, Block.wire_down , Block.space, Block.space],
         [Block.wire_right, Block.split_down, Block.negate_right , Block.wire_down , Block.space],
         [Block.space, Block.negate_right , Block.split_down, Block.wire_right , Block.wire_right ],
@@ -30,7 +30,7 @@ def get_xor():
     ])
 
 def get_split():
-    return Blueprint([1], [0, 2], [
+    return Section([1], [0, 2], [
         [Block.space, Block.wire_right],
         [Block.wire_right, Block.split_down],
         [Block.space, Block.wire_right]
@@ -59,7 +59,7 @@ def get_cross():
     connections.add((split_final.output(1), xor_b.input(0)))
 
 
-    blueprints = [split_a, split_b, xor_1, split_final, xor_a, xor_b]
+    sections = [split_a, split_b, xor_1, split_final, xor_a, xor_b]
 
     locations = [
         (3, 0),
@@ -70,9 +70,9 @@ def get_cross():
         (7, 9),
     ]
 
-    board = rasterize(blueprints, connections, locations)
+    board = rasterize(sections, connections, locations)
 
-    return Blueprint([4, 8], [3, 9], board)
+    return Section([4, 8], [3, 9], board)
 
 def get_half_adder():
     connections = []
@@ -102,12 +102,12 @@ def get_half_adder():
     connections.append((split_1.output(0), output_a.input(0)))
 
 
-    blueprints = [input_a, split_b, xor_1, split_1, split_2, xor_2, and_1, output_a]
+    sections = [input_a, split_b, xor_1, split_1, split_2, xor_2, and_1, output_a]
     locations = [(1, 0),(3, 0), (0, 2), (1, 7), (5, 2), (2, 9), (4, 14), (1, 16)]
 
-    board = rasterize(blueprints, connections, locations)
+    board = rasterize(sections, connections, locations)
 
-    return Blueprint([1, 4], [1, 5], board)
+    return Section([1, 4], [1, 5], board)
 
 def get_full_adder():
     connections = []
@@ -131,12 +131,12 @@ def get_full_adder():
     output_a = get_input_output()
     connections.append(((half_adder_2.output(0), output_a.input(0))))
 
-    blueprints = [input_a, input_b, half_adder_1, carry_in, half_adder_2, or_1, output_a]
+    sections = [input_a, input_b, half_adder_1, carry_in, half_adder_2, or_1, output_a]
     locations = [(4,0), (7,0), (3, 3), (1, 0), (0, 20), (5, 37), (1, 39)]
 
-    board = rasterize(blueprints, connections, locations)
+    board = rasterize(sections, connections, locations)
 
-    return Blueprint([1, 4, 7], [1, 6], board)
+    return Section([1, 4, 7], [1, 6], board)
 
 
 def get_four_adder():
@@ -154,10 +154,10 @@ def get_four_adder():
     connections.append((adder_3.output(1), adder_4.input(0)))
 
 
-    blueprints = [adder_1, adder_2, adder_3, adder_4]
+    sections = [adder_1, adder_2, adder_3, adder_4]
     locations = [(0,1), (12, 1), (24, 1), (36, 1)]
 
-    board = rasterize(blueprints, connections, locations)
+    board = rasterize(sections, connections, locations)
 
     return Blueprint([], [], board) #TODO finish finding input and outputs
 

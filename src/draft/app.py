@@ -1,23 +1,16 @@
-from draft.engine.model import Model
-from draft.engine.controller import Controller
+import draft.blueprints.defaults as defaults
 
-'''
-def run_test():
+import sys, os
+sys.path.append(os.path.abspath('../../bridge_python_side'))
+from bridge_python_side import adapter
+
+from draft.blueprints.adj_level_raster import test_adj_levels_raster
 
 
-    model = Model(50)
-    controller = Controller(model)
-
-    a = HalfAdder()
-    model.apply(a.get(),0,0)
-
-    model.run()
-'''
-from draft.blueprints.blueprint_logic import run
-
-def run_test():
-    run()
-
+def main():
+    
+    section = test_adj_levels_raster()
+    adapter.send_board(section)
 
 
 

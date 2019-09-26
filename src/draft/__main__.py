@@ -1,4 +1,4 @@
-from draft.app import run_test
+from draft.app import main
 
 if __name__ == '__main__':
-    run_test()
+    main()

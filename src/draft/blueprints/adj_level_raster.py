@@ -1,24 +1,16 @@
-'''
-The purpose is to take in an adjacentcy list of blueprints and output the rastered image
-
-[   
-    [A],  
-    [B, C],
-    [D]
-]
-
-
-    A   B   D
-        C
-
-'''
-
-from functools import reduce # Python3
+from functools import reduce
 
 from draft.blueprints.raster import rasterize
 
 
 def adj_levels_raster(blueprint_levels, connections):
+    '''
+
+    Attached locations from a grid
+
+    inputs: [[Blueprint]], [[(Blueprint_1, Ouput_1), (Blueprint_2, Input_2)]
+
+    '''
     spacing_x, spacing_y = 2, 2
     locations = []
 

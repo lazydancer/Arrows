@@ -1,7 +1,7 @@
 import copy
 from random import shuffle
 
-from draft.common.block import Block
+from draft.model.block import Block
 
 def connect(board, connections):
 
