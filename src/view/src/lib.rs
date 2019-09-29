@@ -115,6 +115,11 @@ impl event::EventHandler for MainState {
             KeyCode::Q => {
                 self.clicked_arrow = None;
             }
+            KeyCode::R => {
+                if let Some(x) = self.clicked_arrow {
+                    self.clicked_arrow = Some(x.rotate());
+                }
+            }
             KeyCode::Escape => event::quit(ctx),
             _ => (),
         }
@@ -128,7 +133,6 @@ impl event::EventHandler for MainState {
         y: f32,
     ) {
         if let Some(x) = toolbar_item(Point2::new(x, y)) {
-            println!("{:?}", x);
             self.clicked_arrow = Some(x);
             return;
         }
@@ -149,10 +153,7 @@ fn pos_to_screen(
     view_top_left: (i32, i32),
     pos: (i32, i32),
 ) -> Option<Point2> {
-    // First translate in-game view, make view top left to 0,0
     let pos = (pos.0 - view_top_left.0, pos.1 - view_top_left.1);
-
-    // Then 'grow' in-game position to window size
     let pos = (pos.0 * ICON_SIZE, pos.1 * ICON_SIZE);
 
     if pos.0 + ICON_SIZE > window_size.0 {

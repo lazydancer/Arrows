@@ -22,6 +22,22 @@ impl Block {
         }
     }
 
+    pub fn rotate(self) -> Block {
+        let new_dir = self.get_direction().rotate();
+
+        let block_type = match self.block_type {
+            BlockType::Empty => BlockType::Empty,
+            BlockType::Arrow(_) => BlockType::Arrow(new_dir),
+            BlockType::NotArrow(_) => BlockType::NotArrow(new_dir),
+            BlockType::Split(_) => BlockType::Split(new_dir),
+        };
+
+        return Block {
+            block_type,
+            active: self.active,
+        };
+    }
+
     pub fn get_direction(self) -> Direction {
         match self.block_type {
             BlockType::Empty => Direction::Right,
