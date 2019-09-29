@@ -32,10 +32,10 @@ impl Block {
             BlockType::Split(_) => BlockType::Split(new_dir),
         };
 
-        return Block {
+        Block {
             block_type,
             active: self.active,
-        };
+        }
     }
 
     pub fn get_direction(self) -> Direction {

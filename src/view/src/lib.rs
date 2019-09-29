@@ -137,7 +137,7 @@ impl event::EventHandler for MainState {
             return;
         }
 
-        let pos = screen_to_pos(self.display_size, self.view_top_left, Point2::new(x, y));
+        let pos = screen_to_pos(self.view_top_left, Point2::new(x, y));
         let pos = Pos { x: pos.0, y: pos.1 };
 
         if let Some(x) = self.clicked_arrow {
@@ -167,19 +167,17 @@ fn pos_to_screen(
     Some(Point2::new(pos.0 as f32, pos.1 as f32))
 }
 
-fn screen_to_pos(window_size: (i32, i32), view_top_left: (i32, i32), point: Point2) -> (i32, i32) {
+fn screen_to_pos(view_top_left: (i32, i32), point: Point2) -> (i32, i32) {
     let x = point.x / ICON_SIZE as f32;
     let y = point.y / ICON_SIZE as f32;
 
     let x = x + view_top_left.0 as f32;
     let y = y + view_top_left.0 as f32;
 
-    return (x as i32, y as i32);
+    (x as i32, y as i32)
 }
 
 fn toolbar_item(pos: Point2) -> Option<Block> {
-    println!("{:?}", pos);
-
     if pos.x > 372.0 && pos.x < 388.0 && pos.y > 568.0 && pos.y < 584.0 {
         return Some(Block::new(BlockType::Arrow(Direction::Right)));
     }
@@ -190,5 +188,5 @@ fn toolbar_item(pos: Point2) -> Option<Block> {
         return Some(Block::new(BlockType::Split(Direction::Up)));
     }
 
-    return None;
+    None
 }
