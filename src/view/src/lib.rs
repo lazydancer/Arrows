@@ -172,7 +172,9 @@ fn screen_to_pos(view_top_left: (i32, i32), point: Point2) -> (i32, i32) {
     let y = point.y / ICON_SIZE as f32;
 
     let x = x + view_top_left.0 as f32;
-    let y = y + view_top_left.0 as f32;
+    let y = y + view_top_left.1 as f32;
+
+    println!("{:?}", view_top_left);
 
     (x as i32, y as i32)
 }

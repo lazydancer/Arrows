@@ -3,7 +3,6 @@ from collections import defaultdict
 def topological_sort(dependency_pairs):
     'Sort values subject to dependency constraints'
 
-
     '''Part 1: Set up the graph with each node having:
             num_heads: an int for arrows point to
             tails: a list of arrows going out
@@ -21,9 +20,7 @@ def topological_sort(dependency_pairs):
             tails[h] = [t]
             heads.append(h)
 
-
     layer = [h for h in heads if h not in num_heads] #Calculates the first 'layer'
-    
 
     '''Part 2: Go through each layer of the graph removing tails
         from the previous layer to show the next layer
@@ -31,8 +28,6 @@ def topological_sort(dependency_pairs):
     result = []    
     while layer != []:
         result.append(layer)
-
-        print(num_heads, tails, heads, result)
 
         for h in layer:
             next_layer = []
@@ -46,5 +41,13 @@ def topological_sort(dependency_pairs):
 
     return result
 
-if __name__ == '__main__':
-    print( topological_sort('fb bc ab ad de be'.split()) )
+
+import unittest
+class Test(unittest.TestCase):
+    
+    def test_topological_sort(self):
+        self.assertEqual([['f', 'a'], ['b', 'd'], ['e']], topological_sort('fb bc ab ad de be'.split()))
+    
+       
+# if __name__ == '__main__':
+#     test_topological_sort()
