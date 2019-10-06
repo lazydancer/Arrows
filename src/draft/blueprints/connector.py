@@ -34,7 +34,7 @@ def _connect_path(a, b, board):
     # Simply board remove block and transform into an a 'free or wall'
     wall_board = [list(map(lambda x: True if x != Block.space else False, row)) for row in board]
     
-    a = (a[0], a[1] + 1) # Each start should be on the right
+    a = (a[0], a[1]) 
     #wall_board[a[0]][a[1]] = False
     wall_board[b[0]][b[1]] = False
 
