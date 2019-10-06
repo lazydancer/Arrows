@@ -1,27 +1,27 @@
 from draft.model.block import Block
-from draft.model.section import Section
+from draft.model.section import Section_Data, Section_Flex
 
 from draft.blueprints.raster import rasterize
 
 def get_input_output():
-    return Section([0], [0], [[Block.wire_right]])
+    return Section_Data([0], [0], [[Block.wire_right]])
 
 def get_and():
-    return Section([0, 2], [1], [
+    return Section_Data([0, 2], [1], [
         [Block.wire_right, Block.negate_down , Block.space],
         [Block.space, Block.negate_right, Block.wire_right],
         [Block.wire_right , Block.negate_up, Block.space],
     ])
 
 def get_or():
-    return Section([0, 2], [1], [
+    return Section_Data([0, 2], [1], [
         [Block.wire_right , Block.wire_down, Block.space],
-        [Block.space, Block.wire_right , Block.wire_right ],
+        [Block.space, Block.wire_right , Block.wire_right],
         [Block.wire_right , Block.wire_up, Block.space],
     ])
 
 def get_xor():
-    return Section([1, 3], [2], [
+    return Section_Data([1, 3], [2], [
         [Block.space, Block.wire_right, Block.wire_down , Block.space, Block.space],
         [Block.wire_right, Block.split_down, Block.negate_right , Block.wire_down , Block.space],
         [Block.space, Block.negate_right , Block.split_down, Block.wire_right , Block.wire_right ],
@@ -30,49 +30,74 @@ def get_xor():
     ])
 
 def get_split():
-    return Section([1], [0, 2], [
-        [Block.space, Block.wire_right],
-        [Block.wire_right, Block.split_down],
-        [Block.space, Block.wire_right]
+    return Section_Data([1], [0, 2], [
+        [Block.space, Block.wire_right, Block.wire_right],
+        [Block.wire_right, Block.split_down, Block.space],
+        [Block.space, Block.wire_right, Block.wire_right]
     ])
 
 def get_cross():
-    connections = set()
-
     split_a = get_split()
-
     split_b = get_split()
-    
-    xor_1 = get_xor()   
-    connections.add((split_a.output(1), xor_1.input(0)))
-    connections.add((split_b.output(0), xor_1.input(1)))
-
+    xor_1 = get_xor()
     split_final = get_split()
-    connections.add((xor_1.output(0), split_final.input(0)))
-
-    xor_a = get_xor()   
-    connections.add((split_a.output(0), xor_a.input(0)))
-    connections.add((split_final.output(0), xor_a.input(1)))
-
-    xor_b = get_xor()   
-    connections.add((split_b.output(1), xor_b.input(1)))
-    connections.add((split_final.output(1), xor_b.input(0)))
+    xor_a = get_xor()
+    xor_b = get_xor()
 
 
-    sections = [split_a, split_b, xor_1, split_final, xor_a, xor_b]
+    section = Section_Flex(
+        [split_a.input(0), split_b.input(0)],
+        [xor_a.output(0), xor_b.output(0)],
+        [
+            [split_a.output(1), xor_1.input(0)],
+            [split_b.output(0), xor_1.input(1)],
+            [xor_1.output(0), split_final.input(0)],
+            [split_a.output(0), xor_a.input(0)],
+            [split_final.output(0), xor_a.input(1)],
+            [split_b.output(1), xor_b.input(1)],
+            [split_final.output(1), xor_b.input(0)],
+        ]
+    )
 
-    locations = [
-        (3, 0),
-        (7, 0),
-        (4, 2),
-        (5, 7),
-        (1, 9),
-        (7, 9),
-    ]
+    return section
 
-    board = rasterize(sections, connections, locations)
+# def get_cross():
+#     connections = set()
 
-    return Section([4, 8], [3, 9], board)
+#     split_a = get_split()
+
+#     split_b = get_split()
+    
+#     xor_1 = get_xor()   
+#     connections.add((split_a.output(1), xor_1.input(0)))
+#     connections.add((split_b.output(0), xor_1.input(1)))
+
+#     split_final = get_split()
+#     connections.add((xor_1.output(0), split_final.input(0)))
+
+#     xor_a = get_xor()   
+#     connections.add((split_a.output(0), xor_a.input(0)))
+#     connections.add((split_final.output(0), xor_a.input(1)))
+
+#     xor_b = get_xor()   
+#     connections.add((split_b.output(1), xor_b.input(1)))
+#     connections.add((split_final.output(1), xor_b.input(0)))
+
+
+#     sections = [split_a, split_b, xor_1, split_final, xor_a, xor_b]
+
+#     locations = [
+#         (3, 0),
+#         (7, 0),
+#         (4, 2),
+#         (5, 7),
+#         (1, 9),
+#         (7, 9),
+#     ]
+
+#     board = rasterize(sections, connections, locations)
+
+#     return Section_Data([4, 8], [3, 9], board)
 
 def get_half_adder():
     connections = []
@@ -107,7 +132,7 @@ def get_half_adder():
 
     board = rasterize(sections, connections, locations)
 
-    return Section([1, 4], [1, 5], board)
+    return Section_Data([1, 4], [1, 5], board)
 
 def get_full_adder():
     connections = []
@@ -136,7 +161,7 @@ def get_full_adder():
 
     board = rasterize(sections, connections, locations)
 
-    return Section([1, 4, 7], [1, 6], board)
+    return Section_Data([1, 4, 7], [1, 6], board)
 
 
 def get_four_adder():
