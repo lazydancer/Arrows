@@ -27,6 +27,12 @@ class Section_Data(Section):
     def output(self, output_num):
         return (self, output_num)
 
+    def width(self): 
+        return max([x for x, y in self.data]) + 1
+
+    def height(self):
+        return max([y for x, y in self.data]) + 1
+
     def rasterize(self):
         return self.data
 

@@ -3,6 +3,7 @@ from random import shuffle
 
 from draft.model.block import Block
 
+
 def connect(board, connections):
 
     temp_board = copy.copy(board)

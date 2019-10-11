@@ -30,3 +30,15 @@ def convert_board(board):
             if elem == Block.space:
                 continue
             yield (i, y, elem)
+
+
+def send_sparse(arrows):
+    '''
+    arrows is a dictionary, (x, y) => block
+    '''
+    adapter_board = comm.Engine_Board()
+    
+    for x, y in arrows:
+        adapter_board.add_block(x, y, arrows[(x, y)])
+    
+    adapter_board.start()

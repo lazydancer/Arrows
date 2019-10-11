@@ -7,10 +7,11 @@ from bridge_python_side import adapter
 
 def main():
     
-    section = defaults.get_cross()
-    board = section.rasterize()
-    adapter.send_board(board)
+    section = defaults.four_input_and()
+    arrows = section.rasterize()
+    adapter.send_sparse(arrows)
 
+    #adapter.send_sparse(1)
 
 
     

@@ -7,11 +7,16 @@ def get_input_output():
     return Section_Data([0], [0], [[Block.wire_right]])
 
 def get_and():
-    return Section_Data([0, 2], [1], [
-        [Block.wire_right, Block.negate_down , Block.space],
-        [Block.space, Block.negate_right, Block.wire_right],
-        [Block.wire_right , Block.negate_up, Block.space],
-    ])
+    return Section_Data([0, 2], [1], 
+        {
+            (0,0): Block.wire_right,
+            (1,0): Block.negate_down,
+            (1,1): Block.negate_right, 
+            (2,1): Block.wire_right,
+            (0,2): Block.wire_right,
+            (1,2): Block.negate_up,
+        }
+    )
 
 def get_or():
     return Section_Data([0, 2], [1], [
@@ -60,6 +65,23 @@ def get_cross():
     )
 
     return section
+
+
+def four_input_and():
+    add_1 = get_and()
+    add_2 = get_and()
+    add_merge = get_and()
+
+    return Section_Flex(
+        [add_1.input(0), add_2.input(0)],
+        [add_merge.output(0)],
+        [
+            [add_1.output(0), add_merge.input(0)],
+            [add_2.output(0), add_merge.input(1)],
+        ]
+    )
+
+
 
 # def get_cross():
 #     connections = set()
