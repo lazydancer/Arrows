@@ -98,11 +98,4 @@ def _apply(block, at_x, at_y, prev_result):
             result[y][x] = block[j][i]
     return result
 
-# def test_connect():
-#     board = [[Block.wire_right, Block.space, Block.space], 
-#              [Block.space, Block.space, Block.space], 
-#              [Block.split_left, Block.space, Block.wire_right]]
-#     connect((0, 0), (2, 2), board)
-
-# test_connect()
 

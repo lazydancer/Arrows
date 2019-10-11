@@ -1,5 +1,5 @@
 import abc
-from draft.blueprints.adj_level_raster import raster_topo
+from draft.maker.raster import raster
 
 class Section(abc.ABC):
     '''
@@ -50,4 +50,4 @@ class Section_Flex(Section):
         return (self, output_num)
 
     def rasterize(self):
-        return raster_topo(self._connections)
+        return raster(self._connections)
