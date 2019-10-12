@@ -48,6 +48,4 @@ class Test(unittest.TestCase):
     def test_topological_sort(self):
         self.assertEqual([['f', 'a'], ['b', 'd'], ['e']], topological_sort('fb bc ab ad de be'.split()))
     
-       
-# if __name__ == '__main__':
-#     test_topological_sort()
+
