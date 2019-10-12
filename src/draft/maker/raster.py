@@ -43,17 +43,16 @@ def _place_on_grid(levels, connections):
 
 
 def _connect_rasterize(sections, connections, locations):
-    result = {}
-
+    arrows = {}
     for sec in sections:
-        result = {**result, **_shift_section(sec, locations[sec])} # merge dictionaties
+        arrows = {**arrows, **_shift_section(sec, locations[sec])} # merge dictionaties
 
 
     connection_spots = _connection_spots(connections, sections, locations)
-    
-    #board = connect(board, list(connection_spots))
 
-    return result 
+    arrows = connect(arrows, connection_spots)
+
+    return arrows 
 
 
 def _shift_section(section, to_loc):
@@ -73,8 +72,9 @@ def _connection_spots(connections, sections, locations):
         a_loc = locations[a_bp]
         b_loc = locations[b_bp]
 
-        a = (a_loc[0] + a_bp.outputs[a_idx], a_loc[1] + a_bp.width() - 1)
-        b = (b_loc[0] + b_bp.inputs[b_idx], b_loc[1])
+        a = (a_loc[0] + a_bp.width() - 1, a_loc[1] + a_bp.outputs[a_idx])
+        b = (b_loc[0], b_loc[1] + b_bp.inputs[b_idx])
+
 
         result.append([a, b])
 

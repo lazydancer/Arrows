@@ -140,6 +140,8 @@ impl event::EventHandler for MainState {
         let pos = screen_to_pos(self.view_top_left, Point2::new(x, y));
         let pos = Pos { x: pos.0, y: pos.1 };
 
+        println!("{:?}", pos);
+
         if let Some(x) = self.clicked_arrow {
             self.board.set(x, pos);
         } else {
@@ -173,8 +175,6 @@ fn screen_to_pos(view_top_left: (i32, i32), point: Point2) -> (i32, i32) {
 
     let x = x + view_top_left.0 as f32;
     let y = y + view_top_left.1 as f32;
-
-    println!("{:?}", view_top_left);
 
     (x as i32, y as i32)
 }

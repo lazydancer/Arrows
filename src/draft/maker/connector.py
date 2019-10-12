@@ -4,36 +4,36 @@ from random import shuffle
 from draft.model.block import Block
 
 
-def connect(board, connections):
-
-    temp_board = copy.copy(board)
-
+def connect(arrows, connections):
     for tries in range(100):
         shuffle(connections) # in-place shuffle
-        result = _connections_try(temp_board, connections)
+        result = _connections_try(arrows, connections)
         if result != None:
             return result
         print('Trying to find another path: try', tries)
-
-
     print('Could not find a solution stopped after 100 tries')
 
-def _connections_try(board, connections):
+def _connections_try(arrows, connections):
+    new_arrows = {}
     for a, b in connections:
-        path = _connect_path(a, b, board)
+        path = _connect_path(a, b, arrows)
         if path == None:
             return None
-        board = _apply(path, 0, 0, board)
+        new_arrows = {**new_arrows, **path}
 
-    return board
+    return {**arrows, **new_arrows}
 
 
-def _connect_path(a, b, board):
+def _connect_path(a, b, arrows):
     '''
     Joins two location together going from 'a' to 'b' on the 'board'
     '''
     # Simply board remove block and transform into an a 'free or wall'
-    wall_board = [list(map(lambda x: True if x != Block.space else False, row)) for row in board]
+    wall_board = [[False for _ in range(30)] for _ in range(30)]
+    for x,y in arrows:
+        wall_board[y][x] = True
+
+
     
     a = (a[0], a[1]) 
     #wall_board[a[0]][a[1]] = False
@@ -46,22 +46,22 @@ def _connect_path(a, b, board):
         return None
 
     # Return a empty board with just the path
-    result_board = [[None for elem in row] for row in board]
-
+    new_arrows = {}
     for i in range(len(path)-1):
-        y = path[i+1][0] - path[i][0]
-        x = path[i+1][1] - path[i][1]
+        y = path[i+1][1] - path[i][1]
+        x = path[i+1][0] - path[i][0]
+
 
         if y == 1:
-            result_board[path[i][0]][path[i][1]] = Block.wire_down
+            new_arrows[(path[i][0],path[i][1])] = Block.wire_down
         elif y == -1:
-            result_board[path[i][0]][path[i][1]] = Block.wire_up
+            new_arrows[(path[i][0],path[i][1])] = Block.wire_up
         elif x == 1:
-            result_board[path[i][0]][path[i][1]] = Block.wire_right
+            new_arrows[(path[i][0],path[i][1])] = Block.wire_right
         elif x == -1:
-            result_board[path[i][0]][path[i][1]] = Block.wire_left
+            new_arrows[(path[i][0],path[i][1])] = Block.wire_left
 
-    return result_board
+    return new_arrows
 
 def _breath_search(a, b, board):
     queue = [(a, [a])]

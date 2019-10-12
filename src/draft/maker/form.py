@@ -1,7 +1,7 @@
 
-#from draft.maker.topological_sort import topological_sort
+from draft.maker.topological_sort import topological_sort
 import unittest
-from topological_sort import topological_sort
+#from topological_sort import topological_sort
 
 
 def find_overlaps(lines):
