@@ -45,7 +45,6 @@ src
 │       └── lib.rs
 ├── draft
 │   ├── app.py
-│   ├── app.pyc
 │   ├── defaults
 │   │   └── defaults.py
 │   ├── maker
