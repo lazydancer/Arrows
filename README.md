@@ -5,7 +5,7 @@
 
 **Arrows** is a celluar automata
 
-![Arrows Demo](https://raw.githubusercontent.com/lazydancer/Arrows/master/examples/arrows_demo.gif)
+![Arrows Demo](https://github.com/lazydancer/Arrows/raw/master/examples/arrows_demo.gif)
 
 ## How to use
 
