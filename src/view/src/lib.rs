@@ -17,7 +17,7 @@ const WINDOW_HEIGHT: f32 = 480.0;
 const ICON_SIZE: i32 = 16;
 
 pub fn start(board: Board) -> GameResult {
-    let resource_dir = path::PathBuf::from("/home/james/Dropbox/Arrows/src/view/resources");
+    let resource_dir = path::PathBuf::from("/home/james/Documents/Arrows/src/view/resources");
 
     let cb = ggez::ContextBuilder::new("drawing", "ggez")
         .window_setup(conf::WindowSetup::default().title("Arrows!"))

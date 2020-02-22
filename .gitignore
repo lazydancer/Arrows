@@ -4,3 +4,4 @@ __pycache__
 **/*.rs.bk
 /*/*/target
 .mypy_cache/
+*.pyc
