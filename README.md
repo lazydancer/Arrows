@@ -3,7 +3,7 @@
 
 ## About
 
-**Arrows** is an celluar automata
+**Arrows** is a celluar automata
 
 ![Arrows Demo](https://raw.githubusercontent.com/lazydancer/Arrows/master/examples/arrows_demo.gif)
 
