@@ -3,7 +3,7 @@
 
 ## About
 
-**Arrows** is an logic automata
+**Arrows** is an celluar automata
 
 ![Arrows Demo](https://raw.githubusercontent.com/lazydancer/Arrows/master/examples/arrows_demo.gif)
 
@@ -31,5 +31,3 @@ make run
 
 
 Rust includes all of the logic and graphics. Where a "Board" object can be send to rust, it will display and run this board. Python is higher level drafter, where more complex boards can be designed more quickly. Right now in the drafter, there is a topological funciton to arrange subblock and a basic router for wires using breadth first search. Improving this drafter is an interesting challenge as wires cannot cross, making interesting routering challenges.
-
-I have written more about this on my [website](pucula.com/projects/Arrows)  
