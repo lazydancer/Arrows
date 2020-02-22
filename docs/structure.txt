@@ -1,0 +1,43 @@
+src
+├── bridge_python_side
+│   ├── adapter.py
+│   └── comm.py
+├── bridge_rust_side
+│   ├── Cargo.toml
+│   └── src
+│       └── lib.rs
+├── draft
+│   ├── app.py
+│   ├── app.pyc
+│   ├── defaults
+│   │   └── defaults.py
+│   ├── maker
+│   │   ├── connector.py
+│   │   ├── form.py
+│   │   ├── raster.py
+│   │   └── topological_sort.py
+│   └── model
+│       ├── block.py
+│       └── section.py
+├── logic
+│   ├── Cargo.toml
+│   └── src
+│       ├── block.rs
+│       ├── board.rs
+│       ├── lib.rs
+│       └── pos.rs
+└── view
+    ├── Cargo.toml
+    ├── resources
+    │   ├── arrow_down_active.png
+    │   ├── arrow_down_inactive.png
+    │   ├── arrow_left_active.png
+    │   ├── arrow_left_inactive.png
+    │   ├── arrow_right_active.png
+    │   ├── arrow_right_inactive.png
+    │   ├── arrow_up_active.png
+    │   └── ...
+    └── src
+        ├── assets.rs
+        └── lib.rs
+
