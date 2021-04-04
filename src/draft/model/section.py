@@ -36,6 +36,12 @@ class Section_Data(Section):
     def rasterize(self):
         return self.data
 
+class Section_Section(Section):
+    def __init__(self, data):
+        self.data = data
+
+    def rasterize(self):
+        breakpoint()
 
 class Section_Flex(Section):
     def __init__(self, flex_input, flex_outputs, connections):

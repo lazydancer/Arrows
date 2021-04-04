@@ -7,6 +7,6 @@ sys.path.append(os.path.abspath('../../bridge_python_side'))
 
 
 def main():
-    section = defaults.get_and()
+    section = defaults.four_input_and()
     arrows = section.rasterize()
     adapter.send_sparse(arrows)

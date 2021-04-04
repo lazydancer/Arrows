@@ -18,20 +18,6 @@ class Block:
     space = 12
 
 
-def send_board(board):
-    adapter_board = comm.Engine_Board()
-    for block in convert_board(board):
-        adapter_board.add_block(*block)
-    adapter_board.start()
-
-def convert_board(board):
-    for y, row in enumerate(board):
-        for i, elem in enumerate(row):
-            if elem == Block.space:
-                continue
-            yield (i, y, elem)
-
-
 def send_sparse(arrows):
     '''
     arrows is a dictionary, (x, y) => block

@@ -10,6 +10,8 @@ def raster(connections):
     adjancy_pairs = [(from_node[0], to_node[0]) for from_node, to_node in connections]
     levels = topological_sort(adjancy_pairs)
 
+    breakpoint()
+
     return _place_on_grid(levels, connections)  
       
 
@@ -48,9 +50,9 @@ def _connect_rasterize(sections, connections, locations):
         arrows = {**arrows, **_shift_section(sec, locations[sec])} # merge dictionaties
 
 
-    connection_spots = _connection_spots(connections, sections, locations)
+    # connection_spots = _connection_spots(connections, sections, locations)
 
-    arrows = connect(arrows, connection_spots)
+    # arrows = connect(arrows, connection_spots)
 
     return arrows 
 
