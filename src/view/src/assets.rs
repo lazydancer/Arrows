@@ -1,10 +1,9 @@
 use ggez::graphics::{self, Color, DrawParam};
-use ggez::nalgebra as na;
 use ggez::{Context, GameResult};
 
-use logic::{Block, BlockType, Direction};
+use glam::Vec2;
 
-pub type Point2 = na::Point2<f32>;
+use logic::{Block, BlockType, Direction};
 
 pub struct Assets {
     pub spritebatch: graphics::spritebatch::SpriteBatch,
@@ -18,7 +17,7 @@ impl Assets {
         Ok(Assets { spritebatch })
     }
 
-    pub fn draw_block(&mut self, block: Block, coord: Point2) {
+    pub fn draw_block(&mut self, block: Block, coord: [f32; 2]) {
         let image_rect = Self::spritesheet_loc(block);
         let drawparams = graphics::DrawParam::new().src(image_rect).dest(coord);
         self.spritebatch.add(drawparams);
@@ -41,18 +40,18 @@ impl Assets {
 
         self.draw_block(
             Block::new(BlockType::Arrow(Direction::Right)),
-            Point2::new(372.0, 568.0),
+            [372.0, 568.0],
         );
         self.draw_block(
             Block::new(BlockType::NotArrow(Direction::Right)),
-            Point2::new(390.0, 568.0),
+            [390.0, 568.0],
         );
         self.draw_block(
             Block::new(BlockType::Split(Direction::Up)),
-            Point2::new(408.0, 568.0),
+            [408.0, 568.0],
         );
 
-        let parm = graphics::DrawParam::new().dest(Point2::new(0.0, 0.0));
+        let parm = graphics::DrawParam::new().dest([0.0, 0.0]);
         graphics::draw(ctx, &self.spritebatch, parm)?;
         self.spritebatch.clear();
 

@@ -2,6 +2,7 @@ from cffi import FFI
 from os import path
 
 ffi = FFI()
+
 ffi.cdef("""
     typedef void* board;
 

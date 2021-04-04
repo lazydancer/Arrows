@@ -42,3 +42,4 @@ def send_sparse(arrows):
         adapter_board.add_block(x, y, arrows[(x, y)])
     
     adapter_board.start()
+    
