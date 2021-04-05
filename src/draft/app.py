@@ -1,5 +1,6 @@
 from bridge_python_side import adapter
-import draft.defaults.defaults as defaults
+from draft.block import Block
+import draft.section as section
 
 import sys
 import os
@@ -7,6 +8,6 @@ sys.path.append(os.path.abspath('../../bridge_python_side'))
 
 
 def main():
-    section = defaults.four_input_and()
-    arrows = section.rasterize()
+    arrows = section.raster(section.s['cross'])
+    print(arrows)
     adapter.send_sparse(arrows)
