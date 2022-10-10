@@ -1,0 +1,6 @@
+Package    Version
+---------- -------
+cffi       1.15.1
+pip        22.0.2
+pycparser  2.21
+setuptools 59.6.0

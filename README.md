@@ -21,7 +21,11 @@ mint = "0.5"
 cgmath = { version = "0.17", features = ["mint"]}
 
 
-Build and run the program through make 
+**Aditional Dependecies**
+libudev-dev
+libasound2-dev
+
+Build and run the program through makefile
 
 ```
 make run

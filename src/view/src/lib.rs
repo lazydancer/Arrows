@@ -61,7 +61,7 @@ const ICON_SIZE: i32 = 16;
 // }
 
 pub fn start(board: Board) -> GameResult {
-    let resource_dir = path::PathBuf::from("/home/james/Projects/Arrows/src/view/resources");
+    let resource_dir = path::PathBuf::from("./view/resources");
 
     // let cb = ggez::ContextBuilder::new("drawing", "ggez")
     //     .window_setup(conf::WindowSetup::default().title("Arrows!"))

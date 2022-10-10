@@ -5,3 +5,4 @@ __pycache__
 /*/*/target
 .mypy_cache/
 *.pyc
+venv/

@@ -8,6 +8,6 @@ sys.path.append(os.path.abspath('../../bridge_python_side'))
 
 
 def main():
-    arrows = section.raster(section.s['cross'])
+    arrows = section.flatten(section.s['cross'])
     print(arrows)
     adapter.send_sparse(arrows)
